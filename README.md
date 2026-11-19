@@ -9,13 +9,13 @@ Ouvrir `index.html` dans le navigateur (double-clic), ou :
 ```bash
 npm start
 ```
-puis <http://localhost:5500>. Aucune installation n'est nécessaire (ECharts est dans `vendor/`, les données dans `js/data.js`).
+puis <http://localhost:5500>. Aucune installation n'est nécessaire (Leaflet est dans `vendor/`, les données dans `js/data.js`).
 
 ## Pages
 | Page | Rôle |
 |---|---|
 | `index.html` | recherche, carte, chiffres clés |
-| `carte.html` | carte ECharts : bulles par ville, zoom, pastilles, panneau de détail |
+| `carte.html` | carte Leaflet : bulles regroupées qui se divisent au zoom, panneau de détail |
 | `formations.html` | liste filtrable (mots-clés, zone, mention, alternance, taux d'accès) et triable |
 | `fiche.html?id=…` | admission, 3 sessions, origine des admis, position nationale, insertion de la discipline |
 | `comparateur.html` | jusqu'à 3 formations côte à côte |

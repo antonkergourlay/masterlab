@@ -8,7 +8,7 @@ Le site reprend le prototype validé en SAÉ (zoning, wireframes, prototype) : m
 ## 2. Présentation technique
 - **Front-end** : HTML5, CSS3, JavaScript sans framework ni étape de build. Site statique : aucune base de données, aucun serveur applicatif.
 - **Scripts classiques** (pas de modules ES) et **données embarquées** dans `js/data.js` : le site fonctionne aussi bien en double-cliquant sur `index.html` (`file://`) que sur un serveur HTTP.
-- **Visualisation** : ECharts 5.5.1, fourni dans `vendor/echarts.min.js` (aucun CDN pour les scripts). La carte de France utilise `geo` + `registerMap` avec les régions (`js/france-regions.js`, issu de `assets/geo/franceRegions.json`) et les encarts d'outre-mer (`specialAreas`), comme la démonstration du cours. Les autres graphiques de la fiche (entonnoir, anneau, colonnes, répartition, nuage de points) sont en HTML/CSS.
+- **Carte** : Leaflet 1.9.4 et leaflet.markercluster 1.5.3, fournis dans `vendor/leaflet/` (aucun CDN pour les scripts). Fond de carte : tuiles OpenStreetMap (sans clé, internet requis, attribution affichée, adoucies par CSS). Google Maps n'est pas utilisé : il exige une clé API liée à un compte de facturation. Chaque ville est un marqueur ; markercluster regroupe les villes proches (`maxClusterRadius` dans `js/map.js`) et additionne leurs formations. Les graphiques de la fiche (entonnoir, anneau, colonnes, répartition, nuage de points) sont en HTML/CSS.
 - **Charte** : bleu #0011E0, Cool sky #5DA9E9, blanc, noir. **Polices** : Archivo (titres H1, à la place de Blauer Nue Heavy, non fournie), Inter (H2), Outfit (H3), via Google Fonts ; sans connexion, les polices système prennent le relais. Pour utiliser Blauer Nue : ajouter un `@font-face` dans `css/style.css` et mettre son nom dans `--display`.
 - **Carte** : France métropolitaine seulement ; l'outre-mer est retiré du fond et ses formations sont listées à part.
 - **Mémoire locale** : seule la sélection du comparateur est gardée dans le navigateur (`localStorage`, clé `ml_cmp`). Aucune donnée personnelle.
@@ -21,14 +21,13 @@ formations.html       liste filtrable et triable
 fiche.html?id=<ifc>   fiche formation : admission, position, insertion
 comparateur.html      3 formations côte à côte
 quiz.html             quiz de profil (critères vérifiables)
-css/style.css         feuille de style du prototype + ajouts (aide, notes, carte ECharts)
+css/style.css         feuille de style du prototype + ajouts (aide, notes, carte Leaflet)
 js/app.js             socle commun : données, indicateurs, en-tête/pied, comparateur, cartes
-js/map.js             carte ECharts (régions, bulles, pastilles)
+js/map.js             carte Leaflet (bulles regroupées par zoom)
 js/data.js            données générées (window.MASTERLAB)
-js/france-regions.js  fond de carte généré (window.FRANCE_GEO)
 scripts/              build-data.mjs, check-data.mjs, build-topo.mjs (fond topographique, non utilisé)
 assets/               favicon, GeoJSON des régions
-vendor/               echarts.min.js
+vendor/               Leaflet et leaflet.markercluster
 ```
 
 ## 3. Données
@@ -45,7 +44,7 @@ vendor/               echarts.min.js
 node scripts/build-data.mjs "<dossier contenant les CSV>"
 node scripts/check-data.mjs
 ```
-Le dossier doit contenir `Données des candidatures-20261118/fr-esr-mon_master_2023.csv`, `Données des candidatures-20261118/fr-esr-mon_master_2024-2025.csv` et `fr-esr-insertion_professionnelle-master_2010-2020.csv`. Le script interroge deux API (accès internet requis, quelques minutes) ; Node 18+ suffit (testé avec Node 24). Il écrit `js/data.js` et `js/france-regions.js`.
+Le dossier doit contenir `Données des candidatures-20261118/fr-esr-mon_master_2023.csv`, `Données des candidatures-20261118/fr-esr-mon_master_2024-2025.csv` et `fr-esr-insertion_professionnelle-master_2010-2020.csv`. Le script interroge deux API (accès internet requis, quelques minutes) ; Node 18+ suffit (testé avec Node 24). Il écrit `js/data.js`.
 
 ### Position des formations
 Les villes et coordonnées de l'API Masters-stats se sont révélées incohérentes pour plusieurs formations (par exemple une formation lyonnaise placée à « Ampus »). Le script lit donc le premier lieu de formation déclaré sur Mon Master (« … - VILLE (département) ») et le géocode avec geo.api.gouv.fr. Une formation dont le lieu n'est pas lisible reste sans position : elle est listée sous la carte, jamais placée au hasard. L'outre-mer n'est pas placé sur la carte non plus.
@@ -71,7 +70,7 @@ Les villes et coordonnées de l'API Masters-stats se sont révélées incohéren
 ## 4. Déploiement
 1. Cloner le dépôt : `git clone https://github.com/antonkergourlay/masterlab.git`
 2. Ouvrir `index.html` dans le navigateur, **ou** lancer un serveur : `npm start` (équivaut à `npx http-server -c-1 -p 5500 .`) puis ouvrir `http://localhost:5500`. L'extension *Live Server* de VSCode convient aussi.
-3. Production : copier le dépôt (sans `node_modules/` ni `scripts/`) sur un hébergement statique. Aucun `npm install` n'est nécessaire ; il ne sert qu'à mettre à jour ECharts (`vendor/echarts.min.js` provient de `node_modules/echarts/dist/`).
+3. Production : copier le dépôt (sans `node_modules/` ni `scripts/`) sur un hébergement statique. Aucun `npm install` n'est nécessaire ; il ne sert à rien pour le site (Leaflet est déjà dans `vendor/leaflet/`).
 
 ## 5. Configuration
 - **Périmètre** : la discipline officielle « Lettres, sciences du langage, arts » (colonne Discipline des fichiers Mon Master), soit 22 mentions. Constantes `DISCIPLINE` et `GROUPES` de `scripts/build-data.mjs` : chaque mention est rangée dans un groupe (Numérique, création et audiovisuel ; Arts visuels et création artistique ; Spectacle vivant et musique ; Lettres, langage et langues ; Patrimoine et industries culturelles) et reçoit son libellé affiché. Ces libellés et groupes sont écrits dans `js/data.js` (`meta.mentions`, `meta.groupes`). Aucun filtre par défaut : l'utilisateur filtre par groupe ou par mention. Les mentions « Audiovisuel, médias interactifs numériques, jeux » et « Humanités numériques » ne sont pas dans cette discipline : elles ne sont plus affichées.
@@ -82,14 +81,14 @@ Les villes et coordonnées de l'API Masters-stats se sont révélées incohéren
 ## 6. Conception (composants)
 - **`js/app.js`** : données et indicateurs (`S`, `taux`, `insVal`), recherche (`filterMasters`), mise en forme (`fmt`, `pc`, `eur`, absent → « n.d. »), en-tête et pied de page injectés, comparateur (3 au plus), composant carte de formation (`card`), regroupement par ville (`byCity`).
 - **`js/map.js`** : `createMap(el, onClick)` renvoie `{ update({ villes, city, sel }) }`. L'état de la carte est dans l'adresse (`#Ville/<ifc>`) : au retour d'une fiche, le zoom est retrouvé.
-- **Pages** : chaque HTML charge `vendor/echarts.min.js` (si carte), `js/data.js`, `js/app.js`, puis un script en ligne.
+- **Pages** : chaque HTML charge `vendor/leaflet/` (si carte), `js/data.js`, `js/app.js`, puis un script en ligne.
 - **Accessibilité** : lien d'évitement, focus visible, `aria-live` sur le panneau de la carte, liste de villes alternative à la carte, tableaux pour l'insertion, aide « ? » au clavier (`<details>`).
 
 ## 7. Roadmap
 - **Sprint 2 (09/11 - 20/11)** : prototype v1 fonctionnel sur données réelles, documentation administrateur v1, spécification des visualisations v1.
 - **Sprint 3 (07/12 - 18/12)** : version 2 (tests utilisateurs, affinage des visualisations, retours).
 - **Sprint 4 (11/01 - 15/01)** : version finale et archive du code sur Umtice. Soutenances la semaine du 18/01.
-- Pistes : graphiques ECharts sur la fiche (évolution, insertion), élargir le périmètre.
+- Pistes : graphiques interactifs sur la fiche (évolution, insertion), élargir le périmètre.
 
 ## 8. Suivi des bugs
 - **Statut actuel** : aucun bug bloquant connu à la date de cette version. Contrôle des données : `node scripts/check-data.mjs`.

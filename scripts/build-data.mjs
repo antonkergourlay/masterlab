@@ -13,7 +13,6 @@
  *     insertion  insertion professionnelle (2010-2020) des disciplines liées au périmètre
  *     reperes    distribution nationale (quantiles) pour situer une formation
  *     meta       sources, périmètre, date de génération, comptages de contrôle
- *   js/france-regions.js  window.FRANCE_GEO (fond de carte)
  *
  * Aucune donnée n'est inventée : valeur absente ou non numérique => null.
  */
@@ -265,6 +264,4 @@ const meta = {
 mkdirSync(join(ROOT, 'js'), { recursive: true });
 const banner = '/* Généré par scripts/build-data.mjs : ne pas modifier à la main. Sources : MESRI-SIES (Mon Master, insertion professionnelle), API Masters-stats. */\n';
 writeFileSync(join(ROOT, 'js', 'data.js'), `${banner}window.MASTERLAB = ${JSON.stringify({ meta, masters: list, insertion: insRows, reperes })};\n`);
-const fond = JSON.parse(readFileSync(join(ROOT, 'assets', 'geo', 'franceRegions.json'), 'utf8'));
-writeFileSync(join(ROOT, 'js', 'france-regions.js'), `/* Fond de carte : régions françaises (fichier de la démonstration du cours). */\nwindow.FRANCE_GEO = ${JSON.stringify(fond)};\n`);
 console.log(JSON.stringify(meta.controles, null, 1));

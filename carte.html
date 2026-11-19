@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Carte interactive · Master Lab</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet/MarkerCluster.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="carte">
@@ -31,9 +33,9 @@
     <aside class="card col panel" id="panel" aria-live="polite"></aside>
   </div>
 </main>
-<script src="vendor/echarts.min.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/leaflet/leaflet.markercluster.js"></script>
 <script src="js/data.js"></script>
-<script src="js/france-regions.js"></script>
 <script src="js/app.js"></script>
 <script src="js/map.js"></script>
 <script>
@@ -65,8 +67,9 @@
     const m = sel && byId(sel);
     $('#panel').innerHTML = m ? `
       <button class="back" data-back>Formations à ${esc(m.ville)}</button>
-      <p class="eyebrow">${esc(m.etab)}</p>
+      <p class="eyebrow">${esc(m.etab)} · ${esc(m.ville)}</p>
       <h2 style="margin:0">${esc(nom(m))}</h2>
+      <p class="muted" style="margin:0">${esc(GROUPES[m.groupe])} · discipline Lettres, sciences du langage, arts</p>
       ${chips(m)}
       <div class="grid" style="--c:2;--cm:2;gap:10px">
         <div class="kpi"><b>${fmt(S(m).places)}</b><span>Places</span></div>

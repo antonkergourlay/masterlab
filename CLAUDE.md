@@ -1,6 +1,6 @@
 # Master Lab : notes pour continuer le développement
 
-Site statique multi-pages (HTML + scripts classiques, ECharts, pas de build) qui reprend le prototype de l'équipe (`Wireframe/3-prototype`). Voir [ADMIN.md](ADMIN.md) pour l'architecture et [README.md](README.md) pour le lancement.
+Site statique multi-pages (HTML + scripts classiques, Leaflet, pas de build) qui reprend le prototype de l'équipe (`Wireframe/3-prototype`). Voir [ADMIN.md](ADMIN.md) pour l'architecture et [README.md](README.md) pour le lancement.
 
 ## Règles du projet
 - **Ne pas changer le parcours ni les pages du prototype** sans accord de l'équipe : mêmes libellés, même style (`css/style.css`).
@@ -23,5 +23,5 @@ Site statique multi-pages (HTML + scripts classiques, ECharts, pas de build) qui
 ## Pièges connus
 - Les libellés de mention contiennent des virgules : ne pas les découper avec `split(',')`.
 - La ville et les coordonnées de l'API Masters-stats sont fausses pour plusieurs formations : on géocode le lieu de formation (voir ADMIN.md).
-- `echarts` est un global (script classique), pas un import.
+- `L` (Leaflet) est un global (script classique), pas un import. Pas de clé API : fond OpenStreetMap ; ne pas passer à Google Maps sans clé.
 - L'outre-mer n'est pas placé sur la carte.
