@@ -9,7 +9,8 @@ Le site reprend le prototype validé en SAÉ (zoning, wireframes, prototype) : m
 - **Front-end** : HTML5, CSS3, JavaScript sans framework ni étape de build. Site statique : aucune base de données, aucun serveur applicatif.
 - **Scripts classiques** (pas de modules ES) et **données embarquées** dans `js/data.js` : le site fonctionne aussi bien en double-cliquant sur `index.html` (`file://`) que sur un serveur HTTP.
 - **Visualisation** : ECharts 5.5.1, fourni dans `vendor/echarts.min.js` (aucun CDN pour les scripts). La carte de France utilise `geo` + `registerMap` avec les régions (`js/france-regions.js`, issu de `assets/geo/franceRegions.json`) et les encarts d'outre-mer (`specialAreas`), comme la démonstration du cours. Les autres graphiques de la fiche (entonnoir, anneau, colonnes, répartition, nuage de points) sont en HTML/CSS.
-- **Polices** : League Spartan et Open Sans (Google Fonts). Sans connexion, les polices système prennent le relais.
+- **Charte** : bleu #0011E0, Cool sky #5DA9E9, blanc, noir. **Polices** : Archivo (titres H1, à la place de Blauer Nue Heavy, non fournie), Inter (H2), Outfit (H3), via Google Fonts ; sans connexion, les polices système prennent le relais. Pour utiliser Blauer Nue : ajouter un `@font-face` dans `css/style.css` et mettre son nom dans `--display`.
+- **Carte** : France métropolitaine seulement ; l'outre-mer est retiré du fond et ses formations sont listées à part.
 - **Mémoire locale** : seule la sélection du comparateur est gardée dans le navigateur (`localStorage`, clé `ml_cmp`). Aucune donnée personnelle.
 
 ### Arborescence

@@ -12,7 +12,9 @@ Site statique multi-pages (HTML + scripts classiques, ECharts, pas de build) qui
 - **2023 ≠ 2024-2025** (phases d'admission, colonnes) : le signaler sur toute comparaison multi-sessions.
 - Pas de loyers, frais, échéances, programmes ou métiers : pas dans les données ouvertes.
 - Pas de `fetch` ni de modules ES : les pages doivent marcher en `file://`. Les données sont dans `js/data.js` (généré, ne pas éditer à la main).
-- Charte : bleu #0055cb, jaune #f4c430, anthracite #545454 ; League Spartan (H1), Open Sans (texte).
+- Charte vF (dossier `Charte graphique/`) : bleu #0011E0, Cool sky #5DA9E9, blanc, noir. Titres H1 Blauer Nue Heavy (remplacé par Archivo, Google Fonts, tant que la police n'est pas fournie), H2 Inter Bold, H3 Outfit Medium. Logo : `assets/logo.svg`.
+- Info-bulles « ? » : toujours `help(texte)` (bouton, se ferme au clic ailleurs). Pas de `<details>`.
+- Recherche tolérante (`filterMasters`, `matches` dans `js/app.js`) : accents, pluriels, tirets, une faute de frappe.
 
 ## Commandes
 - `npm start` : serveur local sur le port 5500 (facultatif)
