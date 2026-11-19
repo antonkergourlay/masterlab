@@ -8,7 +8,7 @@ Le site reprend le prototype validé en SAÉ (zoning, wireframes, prototype) : m
 ## 2. Présentation technique
 - **Front-end** : HTML5, CSS3, JavaScript sans framework ni étape de build. Site statique : aucune base de données, aucun serveur applicatif.
 - **Scripts classiques** (pas de modules ES) et **données embarquées** dans `js/data.js` : le site fonctionne aussi bien en double-cliquant sur `index.html` (`file://`) que sur un serveur HTTP.
-- **Carte** : Leaflet 1.9.4 et leaflet.markercluster 1.5.3, fournis dans `vendor/leaflet/` (aucun CDN pour les scripts). Fond de carte : tuiles OpenStreetMap (sans clé, internet requis, attribution affichée, adoucies par CSS). Google Maps n'est pas utilisé : il exige une clé API liée à un compte de facturation. Chaque ville est un marqueur ; markercluster regroupe les villes proches (`maxClusterRadius` dans `js/map.js`) et additionne leurs formations. Les graphiques de la fiche (entonnoir, anneau, colonnes, répartition, nuage de points) sont en HTML/CSS.
+- **Carte** : Leaflet 1.9.4 et leaflet.markercluster 1.5.3, fournis dans `vendor/leaflet/` (aucun CDN pour les scripts). Fond de carte : tuiles OpenStreetMap (sans clé, internet requis, attribution affichée). Les pays voisins et la mer sont voilés en gris avec le contour de la France métropolitaine (`js/france-outline.js`, généré par `node scripts/build-outline.mjs` d'après Admin Express IGN, Licence Ouverte). Google Maps n'est pas utilisé : il exige une clé API liée à un compte de facturation. Chaque ville est un marqueur ; markercluster regroupe les villes proches (`maxClusterRadius` dans `js/map.js`) et additionne leurs formations. Les zooms se font par niveaux entiers : leaflet.markercluster se désynchronise avec des niveaux fractionnaires ou `removeOutsideVisibleBounds`. Les graphiques de la fiche (entonnoir, anneau, colonnes, répartition, nuage de points) sont en HTML/CSS.
 - **Charte** : bleu #0011E0, Cool sky #5DA9E9, blanc, noir. **Polices** : Archivo (titres H1, à la place de Blauer Nue Heavy, non fournie), Inter (H2), Outfit (H3), via Google Fonts ; sans connexion, les polices système prennent le relais. Pour utiliser Blauer Nue : ajouter un `@font-face` dans `css/style.css` et mettre son nom dans `--display`.
 - **Carte** : France métropolitaine seulement ; l'outre-mer est retiré du fond et ses formations sont listées à part.
 - **Mémoire locale** : seule la sélection du comparateur est gardée dans le navigateur (`localStorage`, clé `ml_cmp`). Aucune donnée personnelle.
@@ -24,6 +24,7 @@ quiz.html             quiz de profil (critères vérifiables)
 css/style.css         feuille de style du prototype + ajouts (aide, notes, carte Leaflet)
 js/app.js             socle commun : données, indicateurs, en-tête/pied, comparateur, cartes
 js/map.js             carte Leaflet (bulles regroupées par zoom)
+js/france-outline.js  contour de la France (généré par scripts/build-outline.mjs)
 js/data.js            données générées (window.MASTERLAB)
 scripts/              build-data.mjs, check-data.mjs, build-topo.mjs (fond topographique, non utilisé)
 assets/               favicon, GeoJSON des régions

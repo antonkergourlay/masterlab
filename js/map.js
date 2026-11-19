@@ -1,11 +1,11 @@
 // Carte Leaflet (fond OpenStreetMap / CARTO, sans clé) avec regroupement dynamique des villes (leaflet.markercluster).
 // Dépend de vendor/leaflet, de vendor/leaflet/leaflet.markercluster.js et de app.js (esc).
 const FRANCE = [[41.2, -5.4], [51.2, 9.8]]; // France métropolitaine ; l'outre-mer n'est pas sur la carte
-const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'; // adoucies par le CSS (.leaflet-tile-pane) pour laisser ressortir les bulles
+const TILES = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'; // fond coloré standard (comme Parcoursup)
 
 /** Pastille ronde : sa taille grandit avec le nombre de formations qu'elle regroupe. */
 function bubble(n, kind) {
-  const s = Math.round(Math.min(78, 30 + 6.5 * Math.sqrt(n)));
+  const s = Math.round(Math.min(68, 28 + 5.2 * Math.sqrt(n)));
   return L.divIcon({
     className: 'ml-bubble',
     iconSize: [s, s],
@@ -28,15 +28,27 @@ function createMap(el, onClick) {
     return { update() {}, zoomBy() {} };
   }
   const map = L.map(el, {
-    zoomControl: false, scrollWheelZoom: false, zoomSnap: 0, zoomDelta: 1, minZoom: 4.5, maxZoom: 17,
-    maxBounds: L.latLngBounds(FRANCE).pad(0.7), maxBoundsViscosity: 0.85,
+    zoomControl: false, scrollWheelZoom: false, zoomSnap: 1, zoomDelta: 1, minZoom: 4, maxZoom: 17,
+    maxBounds: L.latLngBounds(FRANCE).pad(0.3), maxBoundsViscosity: 0.85,
     dragging: !L.Browser.mobile, tap: false, attributionControl: true,
   });
   map.attributionControl.setPrefix(false);
-  map.fitBounds(FRANCE, { padding: [8, 8] });
-  map.setMinZoom(map.getZoom() - 0.5);
+  // Vue d'ensemble : zoom fractionnaire pour remplir la carte. Ensuite les zooms se font par niveaux entiers (leaflet.markercluster regroupe par niveau entier).
+  const fb = L.latLngBounds(FRANCE);
+  map.options.zoomSnap = 0;
+  const homeZoom = map.getBoundsZoom(fb, false, L.point(16, 16));
+  map.setView(fb.getCenter(), homeZoom, { animate: false });
+  map.setMinZoom(homeZoom);
+  map.options.zoomSnap = 1;
 
   const tiles = L.tileLayer(TILES, { maxZoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">contributeurs OpenStreetMap</a>' }).addTo(map);
+  // Les pays voisins (et la mer) sont voilés en gris ; la France garde les couleurs du fond, avec un léger voile bleu et un liseré.
+  if (window.FRANCE_OUTLINE) {
+    map.createPane('mask').style.zIndex = 250;
+    const none = { interactive: false, pane: 'mask', smoothFactor: 1.5 };
+    L.polygon([[[30, -30], [30, 30], [62, 30], [62, -30]], ...FRANCE_OUTLINE], { ...none, stroke: false, fillColor: '#cfd3e0', fillOpacity: 0.82 }).addTo(map);
+    L.polygon(FRANCE_OUTLINE, { ...none, color: '#0011E0', weight: 1.4, opacity: 0.55, fillColor: '#5DA9E9', fillOpacity: 0.07 }).addTo(map);
+  }
   const notice = document.createElement('div');
   notice.className = 'map-hint'; notice.setAttribute('role', 'status'); el.appendChild(notice);
   let hintTimer;
@@ -46,7 +58,7 @@ function createMap(el, onClick) {
 
   const group = L.markerClusterGroup({
     maxClusterRadius: 58, showCoverageOnHover: false, spiderfyOnMaxZoom: false, zoomToBoundsOnClick: true,
-    animate: true, animateAddingMarkers: false, chunkedLoading: true, removeOutsideVisibleBounds: true,
+    animate: true, animateAddingMarkers: false, removeOutsideVisibleBounds: false,
     iconCreateFunction: (c) => bubble(c.getAllChildMarkers().reduce((a, m) => a + m.options.n, 0), 'cluster'),
   }).addTo(map);
   group.on('clustermouseover', (e) => {
@@ -60,7 +72,7 @@ function createMap(el, onClick) {
     const marks = villes.map((v) => {
       const n = v.ms.length;
       const mk = L.marker([v.lat, v.lon], { icon: bubble(n, 'city'), n, ville: v.ville, title: `${v.ville} : ${plural(n, 'formation')}`, riseOnHover: true });
-      mk.bindTooltip(`<b>${esc(v.ville)}</b><br>${plural(n, 'formation')}`, { direction: 'top', offset: [0, -Math.round(Math.min(78, 30 + 6.5 * Math.sqrt(n)) / 2)], className: 'ml-tip' });
+      mk.bindTooltip(`<b>${esc(v.ville)}</b><br>${plural(n, 'formation')}`, { direction: 'top', offset: [0, -Math.round(Math.min(68, 28 + 5.2 * Math.sqrt(n)) / 2)], className: 'ml-tip' });
       mk.on('click', () => onClick({ city: v.ville }));
       cityMarkers.set(v.ville, mk);
       return mk;
@@ -74,13 +86,24 @@ function createMap(el, onClick) {
     shown = city;
   }
 
+  let target = null, anchor, wheelTimer;
+  function flush() {
+    if (map._animatingZoom || group._inZoomAnimation) { wheelTimer = setTimeout(flush, 80); return; } // attend la fin de l'animation en cours
+    wheelTimer = null;
+    const z = target; target = null;
+    if (z == null) return;
+    const d = z - map.getZoom(), step = Math.round(d) || (Math.abs(d) > 0.25 ? Math.sign(d) : 0); // niveaux entiers
+    if (step) map.setZoomAround(anchor, map.getZoom() + step);
+  }
   const zoomBy = (f) => (f > 1 ? map.zoomIn() : map.zoomOut());
   // ⌘/Ctrl + molette (le pincement du trackpad arrive comme Ctrl + molette) : zoom ; sinon la page défile.
   el.addEventListener('wheel', (e) => {
     if (!(e.ctrlKey || e.metaKey)) { hint('⌘ / Ctrl + molette, ou pincement, pour zoomer'); return; }
     e.preventDefault();
-    const z = map.getZoom() - e.deltaY * (e.ctrlKey ? 0.03 : 0.008);
-    map.setZoomAround(map.mouseEventToContainerPoint(e), Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), z)), { animate: false });
+    // On cumule le geste puis on zoome une fois, en animé : zoomer à chaque cran sans animation désynchronise les regroupements.
+    target = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), (target ?? map.getZoom()) - e.deltaY * (e.ctrlKey ? 0.03 : 0.008)));
+    anchor = map.mouseEventToContainerPoint(e);
+    if (!wheelTimer) wheelTimer = setTimeout(flush, 120); // au plus un zoom toutes les 120 ms pendant un geste continu
   }, { passive: false });
   if (L.Browser.mobile) el.addEventListener('touchstart', (e) => { if (e.touches.length === 1) hint('Deux doigts pour déplacer la carte'); }, { passive: true });
   addEventListener('resize', () => map.invalidateSize());
@@ -97,7 +120,7 @@ function createMap(el, onClick) {
       if (st.city && st.city !== prevCity) {
         const v = st.villes.find((x) => x.ville === st.city);
         if (v) map.flyTo([v.lat, v.lon], 12, { duration: 0.9 });
-      } else if (!st.city && prevCity) map.flyToBounds(FRANCE, { padding: [8, 8], duration: 0.9 });
+      } else if (!st.city && prevCity) map.flyTo(fb.getCenter(), homeZoom, { duration: 0.9 });
     },
   };
 }
