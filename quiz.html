@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quiz de profil · Master Lab</title>
-<link rel="icon" href="assets/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="quiz">
@@ -15,17 +15,21 @@
   // Chaque réponse devient un critère vérifiable sur les données : le résultat dit « X critères sur Y » et lesquels, sans pourcentage inventé.
   const POOL = filterMasters();
   const medTaux = POOL.map((m) => taux(m)).filter((x) => x != null).sort((a, b) => a - b)[Math.floor(POOL.length / 2)];
-  const kw = (words) => (m) => words.some((w) => new RegExp(`(^|[^a-z])${w}[sx]?([^a-z]|$)`).test(hay(m))); // mot entier (évite « designer » pour « design »)
+  const med = (a) => { a = a.filter((x) => x != null).sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };
+  const medPlaces = med(POOL.map((m) => S(m).places));
+  const medIns = med(POOL.map((m) => insVal(m, 18, 'insertion')));
+  const groupe = (g) => ({ label: `Groupe « ${GROUPES[g]} »`, test: (m) => m.groupe === g });
   const admitted = (m, k) => YEARS.some((y) => (m.sessions[y]?.admisOrigines?.[k] ?? 0) > 0);
   const regions = [...new Set(POOL.map((m) => m.region).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr'));
 
   // [question, [[libellé, critère | null]]] ; critère = { label, test(m) }
   const Q = [
     ['Qu’est-ce qui t’attire le plus ?', [
-      ['Concevoir des interfaces et des parcours', { label: 'Parcours orienté interfaces et design d’interaction', test: kw(['ux', 'interface', 'interaction', 'ergonom', 'design', 'web']) }],
-      ['Créer des images, de l’animation, de la 3D', { label: 'Parcours orienté image, animation ou 3D', test: kw(['image', 'animation', '3d', 'graphi', 'illustration', 'arts']) }],
-      ['Raconter avec le son et la vidéo', { label: 'Parcours orienté son, vidéo ou audiovisuel', test: kw(['son', 'video', 'audiovisuel', 'cinema', 'musique']) }],
-      ['Concevoir des jeux et expériences interactives', { label: 'Parcours orienté jeu ou médias interactifs', test: kw(['jeu', 'game', 'interactif', 'immersi', 'ludique']) }],
+      ['Créer avec le numérique, le design, l’image et le son', groupe('numerique')],
+      ['Pratiquer et créer des œuvres (arts plastiques, mode…)', groupe('arts')],
+      ['La scène, la musique, le mouvement', groupe('spectacle')],
+      ['Les textes, les langues, le langage', groupe('lettres')],
+      ['Le patrimoine et les métiers de la culture', groupe('patrimoine')],
       ['Je ne sais pas encore', null]]],
     ['Quelle est ta formation actuelle ?', [
       ['BUT (MMI ou autre)', { label: 'A admis des titulaires de BUT', test: (m) => admitted(m, 'but') }],
@@ -38,6 +42,13 @@
     ['Où aimerais-tu étudier ?', [
       ...regions.map((r) => [r, { label: `Située en ${r}`, test: (m) => m.region === r }]),
       ['Peu importe', null]]],
+    ['Tu préfères une promotion…', [
+      ['Petite, pour un suivi proche', { label: `Moins de ${medPlaces} places`, test: (m) => S(m).places != null && S(m).places < medPlaces }],
+      ['Grande, pour un réseau plus large', { label: `${medPlaces} places ou plus`, test: (m) => S(m).places != null && S(m).places >= medPlaces }],
+      ['Peu importe', null]]],
+    ['L’insertion professionnelle, pour toi…', [
+      ['Est un critère majeur', { label: `Insertion à 18 mois de la discipline au-dessus de la médiane (${dec(medIns)} %)`, test: (m) => insVal(m, 18, 'insertion') != null && insVal(m, 18, 'insertion') >= medIns }],
+      ['Compte, sans plus', null]]],
     ['Côté sélectivité, tu…', [
       ['Vises les Masters les plus demandés', { label: `Taux d’accès sous la médiane (${dec(medTaux)} %)`, test: (m) => taux(m) != null && taux(m) < medTaux }],
       ['Préfères maximiser tes chances', { label: `Taux d’accès au-dessus de la médiane (${dec(medTaux)} %)`, test: (m) => taux(m) != null && taux(m) >= medTaux }],

@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Comparateur · Master Lab</title>
-<link rel="icon" href="assets/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="comparateur">
 <main class="wrap col" style="gap:20px;padding-top:28px">
-  <div><h1>Comparateur</h1><p>Jusqu’à trois Masters côte à côte. La valeur la plus élevée de chaque ligne chiffrée est en bleu.</p></div>
+  <div><h1>Comparateur</h1><p class="muted" style="font-size:15px;margin-top:8px">Jusqu’à trois Masters côte à côte. La valeur la plus élevée de chaque ligne chiffrée est en bleu.</p></div>
   <div class="row">
     <label for="add" style="margin:0">Ajouter une formation</label>
     <select id="add" style="width:auto;max-width:100%"></select>
@@ -35,7 +35,7 @@
 
   function render() {
     const list = cmps().map(byId).filter(Boolean);
-    const others = filterMasters({ large: true }).filter((m) => !list.includes(m));
+    const others = filterMasters().filter((m) => !list.includes(m));
     $('#add').innerHTML = `<option value="">${list.length >= 3 ? 'Comparateur plein (3 au plus)' : 'Choisir un Master…'}</option>`
       + others.map((m) => `<option value="${esc(m.ifc)}">${esc(m.ville || '')} – ${esc(nom(m))}</option>`).join('');
     $('#add').disabled = list.length >= 3;

@@ -1,4 +1,4 @@
-// Master Lab : éléments communs (données, calculs, en-tête, pied de page, mémoire locale, cartes de formation).
+// Master Lab : éléments communs (données, calculs, recherche, en-tête, pied de page, info-bulles, comparateur).
 // Scripts classiques (pas de modules) : le site s'ouvre aussi directement depuis le disque.
 const $ = (sel, el = document) => el.querySelector(sel);
 const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -11,15 +11,9 @@ const YEARS = [2023, 2024, 2025];
 const LAST = 2025;
 const ND = 'n.d.';
 const byId = (id) => MASTERS.find((m) => m.ifc === id);
-const MENTIONS = {
-  'CREATION NUMERIQUE': 'Création numérique',
-  'ARTS, TECHNOLOGIES, CREATION': 'Arts, technologies, création',
-  'AUDIOVISUEL, MEDIAS INTERACTIFS NUMERIQUES, JEUX': 'Audiovisuel, médias interactifs numériques, jeux',
-  'HUMANITES NUMERIQUES': 'Humanités numériques',
-  'DESIGN': 'Design',
-  'CINEMA ET AUDIOVISUEL': 'Cinéma et audiovisuel',
-};
-const INS_DISC = { disc06: 'Lettres, langues, arts', disc10: 'Information et communication', disc16: 'Informatique' };
+const MENTIONS = D.meta.mentions; // clé nationale (majuscules) -> libellé
+const GROUPES = D.meta.groupes;   // id -> libellé ; chaque formation a un champ groupe
+const INS_DISC = { disc06: 'Lettres, langues, arts' };
 const mentionLabel = (m) => MENTIONS[m] ?? m;
 
 /* ---------- Mise en forme : une valeur absente s'affiche « n.d. », jamais 0 ---------- */
@@ -30,7 +24,7 @@ const pc = (n, d = 0) => (n == null ? ND : `${dec(n, d)} %`);
 const eur = (n) => (n == null ? ND : `${nf.format(Math.round(n))} €`);
 const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const titleCase = (s) => String(s ?? '').toLowerCase().replace(/(^|[\s\-'’(])(\p{L})/gu, (m, p, c) => p + c.toUpperCase()).replace(/ (De|Du|Des|La|Le|Les|Et|En|Sur|Sous) /g, (m, w) => ` ${w.toLowerCase()} `);
+const titleCase = (s) => String(s ?? '').toLowerCase().replace(/(^|[\s\-'’(])(\p{L})/gu, (m, p, c) => p + c.toUpperCase()).replace(/ (De|Du|Des|La|Le|Les|Et|En|Sur|Sous) /g, (m, w) => ` ${w.toLowerCase()} `).replace(/([\s-])([DL])(['’])/g, (m, p, c, a) => p + c.toLowerCase() + a);
 MASTERS.forEach((m) => { if (m.ville) m.ville = titleCase(m.ville); }); // la source donne les villes en capitales
 
 /* ---------- Indicateurs ---------- */
@@ -43,8 +37,10 @@ const DEF = {
   candidats: "Candidats ayant confirmé une candidature à cette formation en phase principale. Une même personne candidate à plusieurs formations : on ne peut pas additionner les candidats de formations différentes.",
   places: "Capacité d'accueil déclarée par la formation sur Mon Master.",
   insertion: "Discipline de l'établissement, tous Masters confondus (pas cette formation seule), pour les diplômés jusqu'en 2020. Les valeurs « ns » (échantillon trop petit) ne sont pas affichées.",
+  origine: "Source : Mon Master 2024-2025 (MESRI-SIES). Pour chaque formation, nombre de candidats ayant accepté une proposition, selon ce qu'ils faisaient l'année précédente : licence 3, licence professionnelle, BUT, master, autre formation ou aucune formation supérieure en France. Pour 2023, le fichier ne distingue pas le BUT.",
 };
-const help = (txt, label = 'Définition') => `<details class="help"><summary aria-label="${esc(label)}">?</summary><div>${esc(txt)}</div></details>`;
+/** Info-bulle « ? » : le contenu est lu au clic par le gestionnaire plus bas. */
+const help = (txt, label = 'Définition') => `<span class="help"><button type="button" class="help-btn" data-help="${esc(txt)}" aria-label="${esc(label)}" aria-expanded="false">?</button></span>`;
 
 /** Insertion : dernière promotion avec une valeur significative pour (établissement, discipline, délai). */
 const INS = new Map();
@@ -57,23 +53,49 @@ function insPoint(m, mois, key) {
 }
 const insVal = (m, mois, key) => insPoint(m, mois, key)?.[key] ?? null;
 
-/* ---------- Recherche ---------- */
+/* ---------- Recherche tolérante : accents, pluriels, tirets, « st » = « saint », une faute de frappe ---------- */
+const canon = (s) => norm(s).replace(/['’\-_/(),.]/g, ' ').replace(/\bste\b/g, 'sainte').replace(/\bst\b/g, 'saint').replace(/\s+/g, ' ').trim();
+const stem = (w) => (w.length > 3 ? w.replace(/[sx]$/, '') : w);
+function within1(a, b) { // distance d'édition <= 1
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0, j = 0, diff = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { i++; j++; continue; }
+    if (++diff > 1) return false;
+    if (a.length > b.length) i++; else if (a.length < b.length) j++; else { i++; j++; }
+  }
+  return diff + (a.length - i) + (b.length - j) <= 1;
+}
 const hayCache = new Map();
-const hay = (m) => hayCache.get(m) ?? (hayCache.set(m, norm([m.mention, mentionLabel(m.mention), m.parcours, m.etab, m.ville, m.region, m.secteur].join(' '))), hayCache.get(m));
-/** Mots-clés : tous présents. Zone : ville, région ou académie. Par défaut, le cœur du périmètre en 2025. */
-function filterMasters({ q = '', zone = '', mention = '', alt = false, tauxMin = 0, large = false } = {}) {
+const hay = (m) => hayCache.get(m) ?? (hayCache.set(m, canon([m.mention, mentionLabel(m.mention), GROUPES[m.groupe], m.parcours, m.etab, m.ville, m.region, m.secteur].join(' '))), hayCache.get(m));
+/** Tous les mots de la requête doivent se retrouver dans le texte (sous-chaîne, ou mot à une faute près). */
+function matches(text, query) {
+  const words = canon(query).split(' ').filter(Boolean);
+  if (!words.length) return true;
+  const tokens = text.split(' ').map(stem);
+  return words.every((w) => {
+    const s = stem(w);
+    return text.includes(s) || (s.length >= 5 && tokens.some((t) => within1(t, s)));
+  });
+}
+/** Zone : ville, région ou académie. Aucun filtre par défaut : toute la discipline, session 2025. */
+function filterMasters({ q = '', zone = '', groupe = '', mention = '', alt = false, tauxMin = 0 } = {}) {
   return MASTERS.filter((m) => {
     if (!m.sessions[LAST]) return false; // formation absente de la session 2025
-    if (!large && m.niveau !== 'coeur' && !mention) return false;
-    return norm(q).split(/\s+/).filter(Boolean).every((w) => hay(m).includes(w))
-      && (!zone || norm(`${m.ville} ${m.region} ${m.academie}`).includes(norm(zone)))
+    return matches(hay(m), q)
+      && matches(canon(`${m.ville} ${m.region} ${m.academie}`), zone)
+      && (!groupe || m.groupe === groupe)
       && (!mention || m.mention === mention)
       && (!alt || m.alternance)
       && (tauxMin <= 0 || (taux(m) != null && taux(m) >= tauxMin));
   });
 }
 
-/* ---------- Mémoire du navigateur (le site marche aussi sans : on perd seulement les choix) ---------- */
+/** Listes déroulantes : groupes de mentions, puis mentions rangées par groupe. */
+const groupeOptions = (first = 'Tous les groupes') => `<option value="">${first}</option>` + Object.entries(GROUPES).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('');
+const mentionOptions = (first = 'Toutes') => `<option value="">${first}</option>` + Object.entries(GROUPES).map(([g, gl]) => `<optgroup label="${esc(gl)}">${Object.entries(MENTIONS).filter(([k]) => MASTERS.some((m) => m.mention === k && m.groupe === g)).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</optgroup>`).join('');
+
+/* ---------- Mémoire du navigateur (seule la sélection du comparateur y est gardée) ---------- */
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem('ml_' + k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem('ml_' + k, JSON.stringify(v)); } catch { /* stockage indisponible */ } },
@@ -86,7 +108,7 @@ document.body.insertAdjacentHTML('afterbegin', `
 <a class="skip" href="#main">Aller au contenu</a>
 <header class="hd">
   <button class="burger" aria-label="Menu" aria-expanded="false"></button>
-  <a class="logo" href="index.html"><i></i>Master Lab</a>
+  <a class="logo" href="index.html" aria-label="Master Lab, accueil"><img src="assets/logo.svg" alt="">MasterLab</a>
   <nav aria-label="Navigation principale">
     ${link('index.html', 'Accueil', 'accueil')}
     ${link('carte.html', 'Carte interactive', 'carte')}
@@ -94,21 +116,81 @@ document.body.insertAdjacentHTML('afterbegin', `
     ${link('comparateur.html', 'Comparateur', 'comparateur')}
     ${link('quiz.html', 'Quiz', 'quiz')}
   </nav>
+  <span></span>
 </header>`);
 document.body.insertAdjacentHTML('beforeend', `
 <footer class="ft">
-  <div><b>Master Lab</b> : explorer les Masters publics en création numérique.</div>
-  <div>Données : MESRI-SIES, Mon Master 2023-2025 et insertion professionnelle 2010-2020 (Licence Ouverte). Projet SAÉ 3.01 · BUT MMI Laval.</div>
+  <div class="in">
+    <div>
+      <div class="brand"><img src="assets/logo.svg" alt="">MasterLab</div>
+      <p>Explorer les Masters publics de lettres, langage et arts (dont le numérique) : où ils sont, combien de places, combien de candidats, et ce que deviennent les diplômés.</p>
+    </div>
+    <div>
+      <h4>Explorer</h4>
+      <ul><li><a href="carte.html">Carte interactive</a></li><li><a href="formations.html">Toutes les formations</a></li><li><a href="comparateur.html">Comparateur</a></li><li><a href="quiz.html">Quiz de profil</a></li></ul>
+    </div>
+    <div>
+      <h4>Données et méthode</h4>
+      <ul>
+        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Mon Master 2023-2025 (data.gouv.fr)</a></li>
+        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Insertion professionnelle 2010-2020</a></li>
+        <li><a href="https://www.monmaster.gouv.fr/" target="_blank" rel="noopener">Site officiel Mon Master</a></li>
+        <li>Licence Ouverte · MESRI-SIES</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Le projet</h4>
+      <p>SAÉ 3.01 / 3.03, BUT MMI Laval.</p>
+      <p style="margin-top:8px">Loïs Hesnault, Anton Kergourlay, Ezechiel Fouiden Oster, William Beslon, Nathan Vacher.</p>
+    </div>
+    <div class="base"><span>© 2026 Master Lab · Données générées le ${esc(D.meta.genere)}</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
+  </div>
 </footer>`);
 const main = $('main'); if (main) { main.id ||= 'main'; main.tabIndex = -1; $('.skip').href = '#' + main.id; }
 const hd = $('.hd'), burger = $('.burger', hd);
 burger.addEventListener('click', () => burger.setAttribute('aria-expanded', hd.classList.toggle('open')));
+
+/* ---------- Info-bulles « ? » : clic ou survol pour ouvrir ; clic ailleurs, Échap ou défilement pour fermer ---------- */
+let pop = null, popBtn = null, pinned = false;
+function closePop() { pop?.remove(); popBtn?.setAttribute('aria-expanded', 'false'); pop = popBtn = null; pinned = false; }
+function openPop(btn) {
+  if (popBtn === btn) return;
+  closePop();
+  pop = document.createElement('div');
+  pop.className = 'help-pop'; pop.setAttribute('role', 'tooltip'); pop.textContent = btn.dataset.help;
+  document.body.appendChild(pop);
+  const r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  const left = Math.min(Math.max(12, r.left + r.width / 2 - w / 2), innerWidth - w - 12);
+  const top = r.bottom + 10 + h > innerHeight - 8 ? Math.max(8, r.top - h - 10) : r.bottom + 10;
+  pop.style.left = `${left}px`; pop.style.top = `${top}px`;
+  btn.setAttribute('aria-expanded', 'true'); popBtn = btn;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.help-btn');
+  if (b) { if (popBtn === b && pinned) closePop(); else { openPop(b); pinned = true; } e.stopPropagation(); return; }
+  if (pop && !e.target.closest('.help-pop')) closePop();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePop(); });
+addEventListener('scroll', closePop, { passive: true });
+addEventListener('resize', closePop);
+if (matchMedia('(hover: hover)').matches) {
+  document.addEventListener('mouseover', (e) => { const b = e.target.closest('.help-btn'); if (b) openPop(b); });
+  document.addEventListener('mouseout', (e) => { if (!pinned && e.target.closest('.help-btn')) closePop(); });
+}
 
 /* Messages courts */
 function toast(msg) {
   $('.toast')?.remove();
   document.body.insertAdjacentHTML('beforeend', `<div class="toast" role="status">${esc(msg)}</div>`);
   setTimeout(() => $('.toast')?.remove(), 2600);
+}
+
+/** Chiffre qui monte de 0 à sa valeur (sauf si l'utilisateur préfère moins de mouvement). */
+function countUp(el, to, format = fmt) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !isFinite(to)) { el.textContent = format(to); return; }
+  const t0 = performance.now(), dur = 900;
+  const step = (t) => { const k = Math.min(1, (t - t0) / dur); el.textContent = format(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
 }
 
 /* ---------- Comparateur (3 formations au plus, mémorisé dans ce navigateur) ---------- */
@@ -118,13 +200,12 @@ function syncButtons() {
 }
 document.addEventListener('click', (e) => {
   const cmp = e.target.closest('[data-cmp]');
-  if (cmp) {
-    const id = cmp.dataset.cmp, list = cmps();
-    if (list.includes(id)) { store.set('cmp', list.filter((x) => x !== id)); toast('Retiré du comparateur'); }
-    else if (list.length >= 3) toast('3 formations au plus dans le comparateur');
-    else { store.set('cmp', [...list, id]); toast(`Ajouté au comparateur (${list.length + 1}/3)`); }
-  }
-  if (cmp) { syncButtons(); document.dispatchEvent(new Event('ml:change')); }
+  if (!cmp) return;
+  const id = cmp.dataset.cmp, list = cmps();
+  if (list.includes(id)) { store.set('cmp', list.filter((x) => x !== id)); toast('Retiré du comparateur'); }
+  else if (list.length >= 3) toast('3 formations au plus dans le comparateur');
+  else { store.set('cmp', [...list, id]); toast(`Ajouté au comparateur (${list.length + 1}/3)`); }
+  syncButtons(); document.dispatchEvent(new Event('ml:change'));
 });
 
 /* ---------- Carte de formation (liste, quiz) ---------- */
@@ -138,7 +219,7 @@ const card = (m, extra = '') => `
   </div>
   <div class="acts">
     <a class="btn p" href="fiche.html?id=${esc(m.ifc)}">Voir la formation</a>
-    <div class="row" style="flex-wrap:nowrap"><button class="btn grow" data-cmp="${esc(m.ifc)}"></button></div>
+    <button class="btn" data-cmp="${esc(m.ifc)}"></button>
   </div>
 </article>`;
 
