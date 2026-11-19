@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Formations · Master Lab</title>
+<link rel="icon" href="assets/favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  @media (max-width: 700px) { #filters:not(.open) { display: none; } }
+  @media (min-width: 701px) { #filters-btn { display: none; } }
+</style>
+</head>
+<body data-page="formations">
+<main class="wrap col" style="gap:20px;padding-top:28px">
+  <div class="row between">
+    <div><h1>Formations</h1><p id="count"></p></div>
+    <div class="row">
+      <button class="btn" id="filters-btn" aria-expanded="false" aria-controls="filters">Filtres</button>
+      <label for="sort" style="margin:0">Trier par</label>
+      <select id="sort" style="width:auto">
+        <option value="taux">Taux d’accès (le plus élevé)</option>
+        <option value="places">Nombre de places</option>
+        <option value="cand">Candidatures (les plus demandées)</option>
+        <option value="emploi">Insertion de la discipline à 18 mois</option>
+        <option value="nom">Ville (A → Z)</option>
+      </select>
+    </div>
+  </div>
+  <div class="split" style="--aw:280px">
+    <aside class="card col" id="filters">
+      <h3>Filtres</h3>
+      <div><label for="q">Mots-clés</label><input type="search" id="q" placeholder="ex. jeu vidéo, design"></div>
+      <div><label for="zone">Zone géographique</label><input type="search" id="zone" placeholder="ex. Bretagne, Lyon"></div>
+      <div><label for="mention">Mention</label><select id="mention"><option value="">Toutes</option></select></div>
+      <label class="check"><input type="checkbox" id="alt"> En alternance uniquement</label>
+      <label class="check"><input type="checkbox" id="large"> Inclure les mentions voisines (design, cinéma)</label>
+      <div><label for="tauxMin">Taux d’accès minimum</label>
+        <select id="tauxMin"><option value="0">Peu importe</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
+      <p class="muted">Taux d’accès : propositions ÷ candidats en phase principale. <details class="help"><summary aria-label="Définition">?</summary><div id="def"></div></details></p>
+      <button class="btn" id="clear">Effacer les filtres</button>
+      <a href="carte.html" id="to-map">Voir sur la carte →</a>
+    </aside>
+    <div class="col grow" id="list"></div>
+  </div>
+</main>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  $('#def').textContent = DEF.taux;
+  $('#mention').insertAdjacentHTML('beforeend', Object.entries(MENTIONS).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join(''));
+  ['q', 'zone', 'mention'].forEach((k) => $('#' + k).value = params.get(k) || '');
+  if (params.get('mention')) $('#large').checked = true;
+  const last = (f) => (a, b) => (f(b) ?? -1) - (f(a) ?? -1); // valeurs absentes en dernier
+  const sorts = {
+    taux: last((m) => taux(m)), places: last((m) => S(m).places), cand: last((m) => S(m).candidatsPP),
+    emploi: last((m) => insVal(m, 18, 'insertion')), nom: (a, b) => a.ville.localeCompare(b.ville),
+  };
+
+  function render() {
+    const f = { q: $('#q').value, zone: $('#zone').value, mention: $('#mention').value, alt: $('#alt').checked, large: $('#large').checked, tauxMin: +$('#tauxMin').value };
+    const list = filterMasters(f).sort(sorts[$('#sort').value]);
+    const qs = new URLSearchParams(Object.entries({ q: f.q, zone: f.zone, mention: f.mention }).filter(([, v]) => v)).toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+    $('#to-map').href = 'carte.html' + (qs ? '?' + qs : '');
+    $('#count').textContent = `${list.length} Master${list.length > 1 ? 's' : ''} · session 2025`;
+    $('#list').innerHTML = list.map((m) => card(m)).join('') || '<div class="card"><h3>Aucun résultat</h3><p>Essaie un autre mot-clé ou retire un filtre.</p></div>';
+    syncButtons();
+  }
+  $$('#filters input, #filters select, #sort').forEach((el) => el.addEventListener('input', render));
+  $('#clear').addEventListener('click', () => { $$('#filters input[type=search]').forEach((i) => i.value = ''); $('#mention').value = ''; $('#alt').checked = $('#large').checked = false; $('#tauxMin').value = 0; render(); });
+  $('#filters-btn').addEventListener('click', (e) => e.currentTarget.setAttribute('aria-expanded', $('#filters').classList.toggle('open')));
+  render();
+</script>
+</body>
+</html>

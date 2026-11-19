@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carte interactive · Master Lab</title>
+<link rel="icon" href="assets/favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="carte">
+<main class="wrap col" style="gap:18px;padding-top:28px">
+  <h1>Carte interactive</h1>
+  <form class="filters" id="search">
+    <div><label for="q">Mots-clés</label><input type="search" id="q" name="q" placeholder="ex. jeu vidéo, design"></div>
+    <div><label for="zone">Zone géographique</label><input type="search" id="zone" name="zone" placeholder="ex. Bretagne, Lyon"></div>
+    <div><label for="mention">Mention</label><select id="mention" name="mention"><option value="">Toutes</option></select></div>
+    <button type="button" class="btn" id="more-btn" aria-expanded="false" aria-controls="more">Filtres</button>
+    <button class="btn p">Rechercher</button>
+  </form>
+  <div class="card row" id="more" hidden style="gap:28px">
+    <label class="check"><input type="checkbox" id="alt"> En alternance uniquement</label>
+    <div class="row"><label for="tauxMin" style="margin:0">Taux d’accès minimum</label>
+      <select id="tauxMin" style="width:auto"><option value="0">Peu importe</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
+  </div>
+
+  <div class="split">
+    <div class="map grow" id="map">
+      <div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en création numérique"></div>
+      <div class="tools"><button class="btn p" data-reset hidden>← Vue France</button></div>
+      <div class="legend">Bulle bleue : nombre de formations · Pastille jaune : une formation</div>
+    </div>
+    <aside class="card col panel" id="panel" aria-live="polite"></aside>
+  </div>
+</main>
+<script src="vendor/echarts.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/france-regions.js"></script>
+<script src="js/app.js"></script>
+<script src="js/map.js"></script>
+<script>
+  $('#mention').insertAdjacentHTML('beforeend', Object.entries(MENTIONS).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join(''));
+  const f = { q: params.get('q') || '', zone: params.get('zone') || '', mention: params.get('mention') || '', alt: false, tauxMin: 0 };
+  ['q', 'zone', 'mention'].forEach((k) => $('#' + k).value = f[k]);
+  // État de la carte dans l'adresse (#Ville/id) : au retour d'une fiche, la carte revient au même zoom.
+  let [city, sel] = decodeURIComponent(location.hash.slice(1)).split('/');
+  const map = createMap($('#emap'), (e) => {
+    if (e.city) { city = e.city; sel = undefined; } else if (e.id) { sel = e.id; city = byId(sel).ville; }
+    render();
+    if (innerWidth <= 700) $('#panel').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  function render() {
+    const list = filterMasters(f), { villes, hors } = byCity(list);
+    const c = villes.find((x) => x.ville === city);
+    if (!c) city = sel = undefined;
+    if (!c?.ms.some((m) => m.ifc === sel)) sel = undefined;
+    history.replaceState(null, '', location.pathname + location.search + (city ? '#' + encodeURIComponent(city + (sel ? '/' + sel : '')) : ''));
+    map.update({ villes, city, sel });
+    $('[data-reset]').hidden = !c;
+
+    const horsHtml = hors.length ? `<p class="muted">${hors.length} formation${hors.length > 1 ? 's' : ''} sans position sur la carte (outre-mer ou coordonnées absentes) : <a href="formations.html${esc(location.search)}">voir la liste</a>.</p>` : '';
+    const m = sel && byId(sel);
+    $('#panel').innerHTML = m ? `
+      <button class="btn ghost" data-back style="align-self:flex-start;padding-inline:0">← Formations à ${esc(m.ville)}</button>
+      <p class="eyebrow">${esc(m.etab)}</p>
+      <h2 style="margin:0">${esc(nom(m))}</h2>
+      ${chips(m)}
+      <div class="grid" style="--c:2;--cm:2;gap:10px">
+        <div class="kpi"><b>${fmt(S(m).places)}</b><span>Places</span></div>
+        <div class="kpi"><b>${pc(taux(m))}</b><span>Taux d’accès ${help(DEF.taux)}</span></div>
+        <div class="kpi"><b>${fmt(S(m).candidatsPP)}</b><span>Candidats</span></div>
+        <div class="kpi"><b>${pc(insVal(m, 18, 'insertion'))}</b><span>Insertion à 18 mois (discipline)</span></div>
+      </div>
+      <a class="btn p" href="fiche.html?id=${esc(m.ifc)}">Voir la formation</a>
+      <div class="row" style="flex-wrap:nowrap"><button class="btn grow" data-cmp="${esc(m.ifc)}"></button></div>`
+    : c ? `
+      <p class="eyebrow">${c.ms.length} formation${c.ms.length > 1 ? 's' : ''}</p>
+      <h2 style="margin:0">${esc(c.ville)}</h2>
+      ${c.ms.map((x, i) => `<button class="mini" data-id="${esc(x.ifc)}"><span class="eyebrow">${i + 1} · ${esc(x.etab)}</span><br><b style="color:var(--dark)">${esc(nom(x))}</b><br>${chips(x)}</button>`).join('')}`
+    : list.length ? `
+      <h2 style="margin:0">${list.length} formation${list.length > 1 ? 's' : ''} trouvée${list.length > 1 ? 's' : ''}</h2>
+      <p>Clique sur une bulle pour zoomer sur une ville.</p>
+      ${villes.map((x) => `<button class="mini" data-city="${esc(x.ville)}"><b style="color:var(--dark)">${esc(x.ville)}</b> <span class="muted">· ${x.ms.length} formation${x.ms.length > 1 ? 's' : ''}</span></button>`).join('')}
+      ${horsHtml}<a href="formations.html${esc(location.search)}">Voir ces résultats en liste →</a>`
+    : '<h2 style="margin:0">Aucune formation</h2><p>Aucun Master ne correspond à ces critères. Élargis ta recherche.</p><a class="btn" href="carte.html">Effacer la recherche</a>';
+    syncButtons();
+  }
+
+  // Liste de villes et bouton de retour (la carte gère ses propres clics)
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-city],[data-id],[data-reset],[data-back]');
+    if (!t || !t.closest('#map, #panel')) return;
+    if (t.dataset.city) { city = t.dataset.city; sel = undefined; }
+    else if (t.dataset.id) { sel = t.dataset.id; city = byId(sel).ville; }
+    else if (t.hasAttribute('data-reset')) city = sel = undefined;
+    else sel = undefined;
+    render();
+  });
+  $('#search').addEventListener('submit', (e) => {
+    e.preventDefault();
+    ['q', 'zone', 'mention'].forEach((k) => f[k] = $('#' + k).value);
+    city = sel = undefined;
+    const qs = new URLSearchParams(Object.entries({ q: f.q, zone: f.zone, mention: f.mention }).filter(([, v]) => v)).toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+    render();
+  });
+  $('#more-btn').addEventListener('click', (e) => e.currentTarget.setAttribute('aria-expanded', !($('#more').hidden = !$('#more').hidden)));
+  $('#alt').addEventListener('change', (e) => { f.alt = e.target.checked; render(); });
+  $('#tauxMin').addEventListener('change', (e) => { f.tauxMin = +e.target.value; render(); });
+  render();
+</script>
+</body>
+</html>

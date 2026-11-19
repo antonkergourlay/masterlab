@@ -1,0 +1,25 @@
+{
+  "name": "master-lab",
+  "version": "0.1.0",
+  "description": "Master Lab : explorer les Masters en création numérique (SAÉ 3.01/3.03, BUT MMI Laval)",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "npx http-server -c-1 -p 5500 .",
+    "data": "node scripts/build-data.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonkergourlay/masterlab.git"
+  },
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/antonkergourlay/masterlab/issues"
+  },
+  "homepage": "https://github.com/antonkergourlay/masterlab#readme",
+  "dependencies": {
+    "echarts": "^5.5.1"
+  },
+  "private": true
+}

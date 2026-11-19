@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fiche formation · Master Lab</title>
+<link rel="icon" href="assets/favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+<style> section[id] { scroll-margin-top: 90px; } </style>
+</head>
+<body data-page="formations">
+<main id="fiche"></main>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const m = byId(params.get('id')) || MASTERS.find((x) => x.sessions[LAST] && x.niveau === 'coeur');
+  document.title = `${nom(m)} · Master Lab`;
+  const yr = m.sessions[LAST] ? LAST : [...YEARS].reverse().find((a) => m.sessions[a]);
+  const s = m.sessions[yr];
+  const peers = filterMasters({ large: true }).filter((x) => taux(x) != null && S(x).candidatsPP != null);
+  const maxC = Math.max(...peers.map((x) => S(x).candidatsPP)), maxT = Math.max(...peers.map((x) => taux(x)));
+  const years = YEARS.filter((a) => m.sessions[a]?.candidatsPP != null);
+  const maxY = Math.max(...years.map((a) => m.sessions[a].candidatsPP), 1);
+
+  // Origine des personnes ayant accepté (BUT, licences, master, autres)
+  const ao = s.admisOrigines || {};
+  const orig = [['BUT', ao.but, 'var(--blue)'], ['Licence', (ao.lg3 ?? 0) + (ao.lp3 ?? 0) || null, '#9db8e6'], ['Master', ao.master, '#c7d3e8'], ['Autres', (ao.autre ?? 0) + (ao.nonInscrit ?? 0) || null, 'var(--line)']];
+  const oTot = orig.reduce((a, [, v]) => a + (v ?? 0), 0);
+
+  // Insertion : dernière promotion significative par indicateur, à 18 et 30 mois
+  const ind = [['Taux d’insertion', 'insertion', pc], ['Taux d’emploi', 'emploi', pc], ['Emplois stables', 'stables', pc], ['Emplois cadres ou professions intermédiaires', 'cadres', pc], ['Emplois à temps plein', 'tempsPlein', pc], ['Salaire net médian (temps plein)', 'salaireNet', eur]];
+  const cell = (mois, key, f) => { const p = insPoint(m, mois, key); return p ? `${f(p[key])} <span class="muted">(promo ${p.annee})</span>` : ND; };
+  const hasIns = m.insDisc && ind.some(([, k]) => insPoint(m, 18, k) || insPoint(m, 30, k));
+
+  $('#fiche').innerHTML = `
+  <div class="band"><div class="wrap col" style="padding-block:28px">
+    <button class="btn ghost" id="back" style="align-self:flex-start;padding-inline:0">← Revenir en arrière</button>
+    <div class="row between stack-m" style="align-items:flex-end">
+      <div class="col grow" style="gap:8px">
+        <p class="eyebrow">${esc(m.etab)}${m.ville ? ` · ${esc(m.ville)}` : ''}</p>
+        <h1>${esc(nom(m))}</h1>
+        <div class="chips"><span class="chip">Mention ${esc(mentionLabel(m.mention))}</span><span class="chip">${esc(m.secteur || 'Secteur n.d.')}</span>${m.alternance ? '<span class="chip">Alternance</span>' : ''}<span class="chip">Session ${yr}</span></div>
+      </div>
+      <div class="row" style="flex-wrap:nowrap"><button class="btn p" data-cmp="${esc(m.ifc)}"></button></div>
+    </div>
+  </div></div>
+
+  <nav class="tabs" aria-label="Sections de la fiche"><a href="#presentation">Présentation</a><a href="#admission">Admission</a><a href="#position">Position</a><a href="#insertion">Insertion pro</a></nav>
+
+  <div class="wrap col" style="gap:24px">
+    ${yr !== LAST ? `<p class="note">Cette formation n’apparaît pas dans la session ${LAST} : les chiffres affichés sont ceux de ${yr}.</p>` : ''}
+    <div class="grid" style="--c:4;--cm:2">
+      <div class="kpi"><b>${fmt(s.places)}</b><span>Places ${help(DEF.places)}</span></div>
+      <div class="kpi"><b>${fmt(s.candidatsPP)}</b><span>Candidats ${help(DEF.candidats)}</span></div>
+      <div class="kpi"><b>${pc(s.tauxProposition)}</b><span>Taux d’accès ${help(DEF.taux)}</span></div>
+      <div class="kpi"><b>${pc(insVal(m, 18, 'insertion'))}</b><span>Insertion à 18 mois (discipline) ${help(DEF.insertion)}</span></div>
+    </div>
+
+    <div class="split">
+      <div class="col grow" style="gap:24px">
+        <section class="card col" id="presentation">
+          <h2 style="margin:0">Présentation</h2>
+          <div class="info"><span>Parcours</span><b>${esc(m.parcours)}</b></div>
+          <div class="info"><span>Mention</span><b>${esc(mentionLabel(m.mention))}</b></div>
+          <div class="info"><span>Établissement</span><b>${esc(m.etab)}</b></div>
+          <div class="info"><span>Lieu d’enseignement</span><b>${esc(m.lieux || m.ville || ND)}</b></div>
+          <div class="info"><span>Modalités</span><b>${esc(String(m.modalite || ND).toLowerCase().replace(/,/g, ', '))}</b></div>
+          <p class="muted">Le programme détaillé, les métiers visés, les frais et le coût de la vie ne figurent pas dans les données ouvertes : consulte le site de l’établissement et Mon Master.</p>
+        </section>
+
+        <section class="card col" id="admission">
+          <h2 style="margin:0">Admission</h2>
+          <div class="grid" style="--c:2;gap:28px">
+            <div class="col" style="gap:8px">
+              <h3>Du dossier à l’inscription</h3>
+              <p class="muted">Session ${yr}, phase principale</p>
+              <div class="funnel">
+                ${[['Candidats', s.candidatsPP], ['Propositions', s.propositionsPP], ['Acceptations', s.acceptesPP], ['Places', s.places]]
+                  .map(([l, v]) => `<div class="hbar"><span>${l}</span><i style="--w:${v == null || !s.candidatsPP ? 0 : Math.min(100, Math.max(2, v / s.candidatsPP * 100))}%"></i><b>${fmt(v)}</b></div>`).join('')}
+              </div>
+            </div>
+            <div class="col" style="gap:8px;align-items:center">
+              <h3>Taux d’accès ${help(DEF.taux)}</h3>
+              ${s.tauxProposition == null ? `<p>${ND}</p>` : `<div class="donut" style="--v:${s.tauxProposition}%"><b>${pc(s.tauxProposition)}</b></div>`}
+              <p class="muted" style="text-align:center">${fmt(s.propositionsPP)} propositions pour ${fmt(s.candidatsPP)} candidats</p>
+            </div>
+            <div class="col" style="gap:8px">
+              <h3>Candidats selon la session</h3>
+              <div class="cols">${years.map((a) => { const v = m.sessions[a].candidatsPP; return `<div><b>${fmt(v)}</b><i style="--h:${v / maxY * 80}%"></i><span>${a}</span></div>`; }).join('') || `<p>${ND}</p>`}</div>
+              <p class="muted">2023 : une seule phase d’admission ; 2024 et 2025 : phase principale et complémentaire. À lire avec prudence.</p>
+            </div>
+            <div class="col" style="gap:8px">
+              <h3>Origine des personnes ayant accepté</h3>
+              ${oTot ? `<div class="stack" role="img" aria-label="${orig.map(([l, v]) => `${l} ${v ?? 0}`).join(', ')}">
+                ${orig.map(([, v, c]) => `<i style="width:${(v ?? 0) / oTot * 100}%;background:${c}"></i>`).join('')}</div>
+              <div class="row muted">${orig.map(([l, v, c]) => `<span><span style="color:${c}">■</span> ${l} ${v == null ? ND : v}</span>`).join('')}</div>
+              <p class="muted">Effectifs, session ${yr}${yr === 2023 ? ' (BUT non distingué en 2023)' : ''}.</p>` : `<p>${ND}</p>`}
+            </div>
+          </div>
+        </section>
+
+        <section class="card col" id="position">
+          <h2 style="margin:0">Où se situe ce Master ?</h2>
+          <p class="muted">Chaque point est un Master de la création numérique (session ${LAST}). Plus il est à droite, plus le taux d’accès est élevé ; plus il est haut, plus il reçoit de candidats. Clique sur un point pour ouvrir sa fiche.</p>
+          <div class="scatter">
+            ${peers.map((x) => `<a href="fiche.html?id=${esc(x.ifc)}" class="${x === m ? 'on' : ''}" title="${esc(x.ville)} – ${esc(x.parcours)}" aria-label="${esc(nom(x))}" style="left:${taux(x) / maxT * 92}%;bottom:${S(x).candidatsPP / maxC * 92}%"></a>`).join('')}
+            <span class="ax" style="right:0;bottom:-24px">Taux d’accès →</span>
+            <span class="ax" style="left:-28px;top:-22px">↑ Candidats</span>
+          </div>
+        </section>
+
+        <section class="card col" id="insertion">
+          <h2 style="margin:0">Insertion professionnelle</h2>
+          <p class="note">Ces chiffres concernent la discipline « ${esc(INS_DISC[m.insDisc] || 'n.d.')} » de l’établissement, tous Masters confondus, pour les diplômés jusqu’en 2020. Ce n’est pas l’insertion de cette formation seule.</p>
+          ${hasIns ? `<div style="overflow-x:auto"><table class="simple"><thead><tr><th scope="col">Indicateur</th><th scope="col">18 mois après</th><th scope="col">30 mois après</th></tr></thead><tbody>
+            ${ind.map(([l, k, f]) => `<tr><th scope="row">${l}</th><td>${cell(18, k, f)}</td><td>${cell(30, k, f)}</td></tr>`).join('')}</tbody></table></div>
+            <p class="muted">Dernière promotion disposant d’une valeur significative. « n.d. » : valeur non communiquée (échantillon trop petit).</p>`
+          : '<p>Aucune donnée d’insertion exploitable pour cette discipline dans cet établissement (valeurs absentes ou non significatives).</p>'}
+        </section>
+      </div>
+
+      <aside class="col" style="gap:24px">
+        <div class="card col">
+          <h3>En bref</h3>
+          <div>
+            <div class="info"><span>Lieu</span><b>${esc(m.ville || ND)}</b></div>
+            <div class="info"><span>Région</span><b>${esc(m.region || ND)}</b></div>
+            <div class="info"><span>Capacité</span><b>${fmt(s.places)} places</b></div>
+            <div class="info"><span>Alternance</span><b>${m.alternance ? 'Oui' : 'Non'}</b></div>
+            <div class="info"><span>Rang du dernier appelé</span><b>${fmt(s.rangDernierPP)}</b></div>
+          </div>
+        </div>
+        <div class="card col"><h3>Source des données</h3><p class="muted">MESRI-SIES, Mon Master 2023-2025 et insertion professionnelle des diplômés de master 2010-2020, Licence Ouverte. Coordonnées des villes : geo.api.gouv.fr. Données générées le ${esc(D.meta.genere)}.</p></div>
+      </aside>
+    </div>
+  </div>`;
+
+  $('#back').addEventListener('click', () => history.length > 1 ? history.back() : (location.href = 'formations.html'));
+  syncButtons();
+</script>
+</body>
+</html>
