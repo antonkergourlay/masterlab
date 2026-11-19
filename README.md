@@ -1,6 +1,6 @@
 # Master Lab
 
-Explorer les **Masters publics en création numérique** : formations, candidatures Mon Master, insertion professionnelle de leur discipline. Projet de la SAÉ 3.01/3.03 (BUT MMI Laval), construit à partir du zoning, des wireframes et du prototype de l'équipe.
+Explorer les **Masters publics de la discipline « Lettres, sciences du langage, arts »** (dont le numérique, la création et l'audiovisuel) : formations, candidatures Mon Master, insertion professionnelle de leur discipline. Projet de la SAÉ 3.01/3.03 (BUT MMI Laval), construit à partir du zoning, des wireframes et du prototype de l'équipe.
 
 Tout ce qui est affiché vient de données ouvertes officielles (MESRI-SIES, Licence Ouverte). Une valeur absente s'affiche « n.d. » : rien n'est inventé.
 

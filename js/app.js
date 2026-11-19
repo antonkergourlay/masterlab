@@ -11,15 +11,9 @@ const YEARS = [2023, 2024, 2025];
 const LAST = 2025;
 const ND = 'n.d.';
 const byId = (id) => MASTERS.find((m) => m.ifc === id);
-const MENTIONS = {
-  'CREATION NUMERIQUE': 'Création numérique',
-  'ARTS, TECHNOLOGIES, CREATION': 'Arts, technologies, création',
-  'AUDIOVISUEL, MEDIAS INTERACTIFS NUMERIQUES, JEUX': 'Audiovisuel, médias interactifs numériques, jeux',
-  'HUMANITES NUMERIQUES': 'Humanités numériques',
-  'DESIGN': 'Design',
-  'CINEMA ET AUDIOVISUEL': 'Cinéma et audiovisuel',
-};
-const INS_DISC = { disc06: 'Lettres, langues, arts', disc10: 'Information et communication', disc16: 'Informatique' };
+const MENTIONS = D.meta.mentions; // clé nationale (majuscules) -> libellé
+const GROUPES = D.meta.groupes;   // id -> libellé ; chaque formation a un champ groupe
+const INS_DISC = { disc06: 'Lettres, langues, arts' };
 const mentionLabel = (m) => MENTIONS[m] ?? m;
 
 /* ---------- Mise en forme : une valeur absente s'affiche « n.d. », jamais 0 ---------- */
@@ -30,7 +24,7 @@ const pc = (n, d = 0) => (n == null ? ND : `${dec(n, d)} %`);
 const eur = (n) => (n == null ? ND : `${nf.format(Math.round(n))} €`);
 const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const titleCase = (s) => String(s ?? '').toLowerCase().replace(/(^|[\s\-'’(])(\p{L})/gu, (m, p, c) => p + c.toUpperCase()).replace(/ (De|Du|Des|La|Le|Les|Et|En|Sur|Sous) /g, (m, w) => ` ${w.toLowerCase()} `);
+const titleCase = (s) => String(s ?? '').toLowerCase().replace(/(^|[\s\-'’(])(\p{L})/gu, (m, p, c) => p + c.toUpperCase()).replace(/ (De|Du|Des|La|Le|Les|Et|En|Sur|Sous) /g, (m, w) => ` ${w.toLowerCase()} `).replace(/([\s-])([DL])(['’])/g, (m, p, c, a) => p + c.toLowerCase() + a);
 MASTERS.forEach((m) => { if (m.ville) m.ville = titleCase(m.ville); }); // la source donne les villes en capitales
 
 /* ---------- Indicateurs ---------- */
@@ -73,7 +67,7 @@ function within1(a, b) { // distance d'édition <= 1
   return diff + (a.length - i) + (b.length - j) <= 1;
 }
 const hayCache = new Map();
-const hay = (m) => hayCache.get(m) ?? (hayCache.set(m, canon([m.mention, mentionLabel(m.mention), m.parcours, m.etab, m.ville, m.region, m.secteur].join(' '))), hayCache.get(m));
+const hay = (m) => hayCache.get(m) ?? (hayCache.set(m, canon([m.mention, mentionLabel(m.mention), GROUPES[m.groupe], m.parcours, m.etab, m.ville, m.region, m.secteur].join(' '))), hayCache.get(m));
 /** Tous les mots de la requête doivent se retrouver dans le texte (sous-chaîne, ou mot à une faute près). */
 function matches(text, query) {
   const words = canon(query).split(' ').filter(Boolean);
@@ -84,18 +78,22 @@ function matches(text, query) {
     return text.includes(s) || (s.length >= 5 && tokens.some((t) => within1(t, s)));
   });
 }
-/** Zone : ville, région ou académie. Par défaut, le cœur du périmètre en 2025. */
-function filterMasters({ q = '', zone = '', mention = '', alt = false, tauxMin = 0, large = false } = {}) {
+/** Zone : ville, région ou académie. Aucun filtre par défaut : toute la discipline, session 2025. */
+function filterMasters({ q = '', zone = '', groupe = '', mention = '', alt = false, tauxMin = 0 } = {}) {
   return MASTERS.filter((m) => {
     if (!m.sessions[LAST]) return false; // formation absente de la session 2025
-    if (!large && m.niveau !== 'coeur' && !mention) return false;
     return matches(hay(m), q)
       && matches(canon(`${m.ville} ${m.region} ${m.academie}`), zone)
+      && (!groupe || m.groupe === groupe)
       && (!mention || m.mention === mention)
       && (!alt || m.alternance)
       && (tauxMin <= 0 || (taux(m) != null && taux(m) >= tauxMin));
   });
 }
+
+/** Listes déroulantes : groupes de mentions, puis mentions rangées par groupe. */
+const groupeOptions = (first = 'Tous les groupes') => `<option value="">${first}</option>` + Object.entries(GROUPES).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('');
+const mentionOptions = (first = 'Toutes') => `<option value="">${first}</option>` + Object.entries(GROUPES).map(([g, gl]) => `<optgroup label="${esc(gl)}">${Object.entries(MENTIONS).filter(([k]) => MASTERS.some((m) => m.mention === k && m.groupe === g)).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</optgroup>`).join('');
 
 /* ---------- Mémoire du navigateur (seule la sélection du comparateur y est gardée) ---------- */
 const store = {
@@ -125,7 +123,7 @@ document.body.insertAdjacentHTML('beforeend', `
   <div class="in">
     <div>
       <div class="brand"><img src="assets/logo.svg" alt="">MasterLab</div>
-      <p>Explorer les Masters publics en création numérique : où ils sont, combien de places, combien de candidats, et ce que deviennent les diplômés.</p>
+      <p>Explorer les Masters publics de lettres, langage et arts (dont le numérique) : où ils sont, combien de places, combien de candidats, et ce que deviennent les diplômés.</p>
     </div>
     <div>
       <h4>Explorer</h4>

@@ -1,7 +1,7 @@
 # Documentation Administrateur
 
 ## 1. Objectif
-Passation à une équipe de développement et de tierce maintenance applicative (TMA) de l'application web « Master Lab » : aider les étudiants de bac+3 à découvrir les Masters publics en création numérique, leurs chiffres de candidature (Mon Master) et l'insertion professionnelle de leur discipline.
+Passation à une équipe de développement et de tierce maintenance applicative (TMA) de l'application web « Master Lab » : aider les étudiants de bac+3 à découvrir les Masters publics de la discipline « Lettres, sciences du langage, arts » (dont le numérique, la création et l'audiovisuel), leurs chiffres de candidature (Mon Master) et l'insertion professionnelle de leur discipline.
 
 Le site reprend le prototype validé en SAÉ (zoning, wireframes, prototype) : mêmes écrans, même charte, même parcours. Seules les données sont réelles. **Pas de compte** (connexion, inscription, favoris, alertes, espace personnel) : le site n'a pas de base de données.
 
@@ -56,7 +56,7 @@ Les villes et coordonnées de l'API Masters-stats se sont révélées incohéren
 - Le **taux d'accès** affiché par le prototype est calculé par le site : propositions ÷ candidats de la phase principale. Ce n'est pas un taux officiel ni une probabilité d'admission. Une infobulle « ? » le rappelle partout. Pour l'alternance, les propositions dépendent des contrats d'apprentissage : taux naturellement bas.
 - L'**insertion** est publiée par établissement × discipline (jamais par formation), pour des promotions jusqu'en 2020. Les valeurs « ns » sont stockées en `null` et affichées « n.d. », jamais à zéro. Chaque affichage précise « discipline de l'établissement » et l'année de promotion.
 - Non disponibles dans les données ouvertes, donc **absents du site** : programme détaillé, métiers visés, loyers et coût de la vie, frais, échéances Mon Master. Comptes, favoris et alertes sont abandonnés (pas de base de données). Le prototype affichait des valeurs d'exemple pour ces éléments ; elles ont été retirées.
-- Le périmètre ne contient aucune formation en Pays de la Loire : aucune mention retenue n'y est ouverte à la candidature dans les fichiers sources.
+- 3 formations de La Réunion (outre-mer) sont listées mais non placées sur la carte.
 
 ### Écarts avec le prototype
 | Prototype | Site actuel | Pourquoi |
@@ -74,8 +74,9 @@ Les villes et coordonnées de l'API Masters-stats se sont révélées incohéren
 3. Production : copier le dépôt (sans `node_modules/` ni `scripts/`) sur un hébergement statique. Aucun `npm install` n'est nécessaire ; il ne sert qu'à mettre à jour ECharts (`vendor/echarts.min.js` provient de `node_modules/echarts/dist/`).
 
 ## 5. Configuration
-- **Périmètre « création numérique »** : constante `SCOPE` de `scripts/build-data.mjs` (mentions nationales, « coeur » ou « voisin ») et `MENTIONS` de `js/app.js` (libellés affichés). Il n'existe pas de secteur disciplinaire unique : le périmètre est une liste de mentions. Cœur : Création numérique ; Arts, technologies, création ; Audiovisuel, médias interactifs numériques, jeux ; Humanités numériques. Voisines (case « Inclure les mentions voisines » de la liste) : Design ; Cinéma et audiovisuel.
-- **Disciplines d'insertion** : `INS_DISC` de `js/app.js` (disc06 Lettres-langues-arts, disc10 Information-communication, disc16 Informatique), déduites des secteurs du périmètre via `insDiscId` de l'API.
+- **Périmètre** : la discipline officielle « Lettres, sciences du langage, arts » (colonne Discipline des fichiers Mon Master), soit 22 mentions. Constantes `DISCIPLINE` et `GROUPES` de `scripts/build-data.mjs` : chaque mention est rangée dans un groupe (Numérique, création et audiovisuel ; Arts visuels et création artistique ; Spectacle vivant et musique ; Lettres, langage et langues ; Patrimoine et industries culturelles) et reçoit son libellé affiché. Ces libellés et groupes sont écrits dans `js/data.js` (`meta.mentions`, `meta.groupes`). Aucun filtre par défaut : l'utilisateur filtre par groupe ou par mention. Les mentions « Audiovisuel, médias interactifs numériques, jeux » et « Humanités numériques » ne sont pas dans cette discipline : elles ne sont plus affichées.
+- **Disciplines d'insertion** : déduites des secteurs du périmètre via `insDiscId` de l'API ; pour ce périmètre, une seule (disc06 Lettres, langues, arts).
+- **Carte** : les villes proches à l'écran sont regroupées en une bulle (`GROUP_RADIUS` dans `js/map.js`) ; le zoom se fait avec ⌘/Ctrl + molette, pincement ou boutons, la molette seule fait défiler la page.
 - **Session de référence** : `LAST` dans `js/app.js` (2025).
 
 ## 6. Conception (composants)

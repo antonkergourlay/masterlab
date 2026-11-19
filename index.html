@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Master Lab · Trouve ton Master en création numérique</title>
+<title>Master Lab · Trouve ton Master en lettres, langage et arts</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="accueil">
 <main>
   <section class="hero"><div class="wrap col" style="gap:22px;padding-block:64px;align-items:center">
-    <h1>Trouve ton Master en création numérique</h1>
-    <p style="max-width:620px;text-align:center;font-size:17px;color:var(--muted)">Les formations publiques de France sur une carte, avec leurs chiffres d’admission Mon Master et l’insertion professionnelle de leur discipline, au même endroit.</p>
+    <h1>Trouve ton Master en lettres, langage et arts</h1>
+    <p style="max-width:640px;text-align:center;font-size:17px;color:var(--muted)">Les formations publiques de la discipline « Lettres, sciences du langage, arts », du numérique à la création, sur une carte, avec leurs chiffres d’admission Mon Master et l’insertion professionnelle.</p>
     <form class="search" action="carte.html" style="width:100%">
       <div><label for="q">Mots-clés</label><input type="search" id="q" name="q" placeholder="ex. jeu vidéo, design, médias"></div>
       <div><label for="zone">Zone géographique</label><input type="search" id="zone" name="zone" placeholder="ex. Bretagne, Lyon"></div>
-      <div><label for="mention">Mention</label><select id="mention" name="mention"><option value="">Toutes</option></select></div>
+      <div><label for="groupe">Groupe de mentions</label><select id="groupe" name="groupe"></select></div>
       <button class="btn p" style="height:44px">Rechercher</button>
     </form>
     <div class="row" style="justify-content:center">
@@ -36,11 +36,11 @@
   <section class="wrap col">
     <div class="row between"><h2 style="margin:0">La carte des Masters</h2><a href="carte.html">Ouvrir la carte interactive →</a></div>
     <p>Chaque bulle indique le nombre de formations dans la ville. Clique pour explorer.</p>
-    <div class="map" id="preview" style="--mh:480px"><div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en création numérique"></div></div>
+    <div class="map" id="preview" style="--mh:480px"><div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en lettres, langage et arts"></div></div>
   </section>
 
   <section class="wrap col" style="padding-top:0">
-    <h2 style="margin:0">La création numérique en chiffres</h2>
+    <h2 style="margin:0">La discipline en chiffres</h2>
     <p class="muted" id="scope"></p>
     <div class="grid" style="--c:4;--cm:2" id="kpis"></div>
     <div class="card col">
@@ -56,14 +56,14 @@
 <script src="js/app.js"></script>
 <script src="js/map.js"></script>
 <script>
-  $('#mention').insertAdjacentHTML('beforeend', Object.entries(MENTIONS).filter(([k]) => D.meta.perimetre[k] === 'coeur').map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join(''));
+  $('#groupe').innerHTML = groupeOptions();
   const list = filterMasters(), { villes } = byCity(list);
   const map = createMap($('#emap'), (e) => { if (e.city) location.href = 'carte.html#' + encodeURIComponent(e.city); });
   map.update({ villes });
 
   const sum = (k) => list.reduce((a, m) => a + (S(m)[k] ?? 0), 0);
   const tx = list.map((m) => taux(m)).filter((x) => x != null).sort((a, b) => a - b);
-  $('#scope').textContent = `Session 2025 de Mon Master, ${list.length} formations des mentions création numérique, arts-technologies-création, audiovisuel-médias-jeux et humanités numériques.`;
+  $('#scope').textContent = `Session 2025 de Mon Master, ${list.length} formations de la discipline « Lettres, sciences du langage, arts » (${Object.keys(MENTIONS).length} mentions, ${Object.keys(GROUPES).length} groupes).`;
   const kp = [
     [list.length, 'Masters référencés', fmt],
     [sum('places'), 'Places offertes', fmt],

@@ -18,17 +18,18 @@
   const med = (a) => { a = a.filter((x) => x != null).sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };
   const medPlaces = med(POOL.map((m) => S(m).places));
   const medIns = med(POOL.map((m) => insVal(m, 18, 'insertion')));
-  const kw = (words) => (m) => words.some((w) => new RegExp(`(^|[^a-z])${w}[sx]?([^a-z]|$)`).test(hay(m))); // mot entier (évite « designer » pour « design »)
+  const groupe = (g) => ({ label: `Groupe « ${GROUPES[g]} »`, test: (m) => m.groupe === g });
   const admitted = (m, k) => YEARS.some((y) => (m.sessions[y]?.admisOrigines?.[k] ?? 0) > 0);
   const regions = [...new Set(POOL.map((m) => m.region).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr'));
 
   // [question, [[libellé, critère | null]]] ; critère = { label, test(m) }
   const Q = [
     ['Qu’est-ce qui t’attire le plus ?', [
-      ['Concevoir des interfaces et des parcours', { label: 'Parcours orienté interfaces et design d’interaction', test: kw(['ux', 'interface', 'interaction', 'ergonom', 'design', 'web']) }],
-      ['Créer des images, de l’animation, de la 3D', { label: 'Parcours orienté image, animation ou 3D', test: kw(['image', 'animation', '3d', 'graphi', 'illustration', 'arts']) }],
-      ['Raconter avec le son et la vidéo', { label: 'Parcours orienté son, vidéo ou audiovisuel', test: kw(['son', 'video', 'audiovisuel', 'cinema', 'musique']) }],
-      ['Concevoir des jeux et expériences interactives', { label: 'Parcours orienté jeu ou médias interactifs', test: kw(['jeu', 'game', 'interactif', 'immersi', 'ludique']) }],
+      ['Créer avec le numérique, le design, l’image et le son', groupe('numerique')],
+      ['Pratiquer et créer des œuvres (arts plastiques, mode…)', groupe('arts')],
+      ['La scène, la musique, le mouvement', groupe('spectacle')],
+      ['Les textes, les langues, le langage', groupe('lettres')],
+      ['Le patrimoine et les métiers de la culture', groupe('patrimoine')],
       ['Je ne sais pas encore', null]]],
     ['Quelle est ta formation actuelle ?', [
       ['BUT (MMI ou autre)', { label: 'A admis des titulaires de BUT', test: (m) => admitted(m, 'but') }],
@@ -40,12 +41,6 @@
       ['Pas important', null]]],
     ['Où aimerais-tu étudier ?', [
       ...regions.map((r) => [r, { label: `Située en ${r}`, test: (m) => m.region === r }]),
-      ['Peu importe', null]]],
-    ['Quel type de Master te parle ?', [
-      ['Création numérique (conception, production)', { label: 'Mention Création numérique', test: (m) => m.mention === 'CREATION NUMERIQUE' }],
-      ['Arts, technologies et création', { label: 'Mention Arts, technologies, création', test: (m) => m.mention === 'ARTS, TECHNOLOGIES, CREATION' }],
-      ['Audiovisuel, médias interactifs, jeux', { label: 'Mention Audiovisuel, médias interactifs numériques, jeux', test: (m) => m.mention === 'AUDIOVISUEL, MEDIAS INTERACTIFS NUMERIQUES, JEUX' }],
-      ['Humanités numériques (culture, recherche)', { label: 'Mention Humanités numériques', test: (m) => m.mention === 'HUMANITES NUMERIQUES' }],
       ['Peu importe', null]]],
     ['Tu préfères une promotion…', [
       ['Petite, pour un suivi proche', { label: `Moins de ${medPlaces} places`, test: (m) => S(m).places != null && S(m).places < medPlaces }],

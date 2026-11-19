@@ -35,7 +35,7 @@
 
   function render() {
     const list = cmps().map(byId).filter(Boolean);
-    const others = filterMasters({ large: true }).filter((m) => !list.includes(m));
+    const others = filterMasters().filter((m) => !list.includes(m));
     $('#add').innerHTML = `<option value="">${list.length >= 3 ? 'Comparateur plein (3 au plus)' : 'Choisir un Master…'}</option>`
       + others.map((m) => `<option value="${esc(m.ifc)}">${esc(m.ville || '')} – ${esc(nom(m))}</option>`).join('');
     $('#add').disabled = list.length >= 3;

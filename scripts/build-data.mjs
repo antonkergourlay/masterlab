@@ -9,7 +9,7 @@
  *
  * Sorties :
  *   js/data.js            window.MASTERLAB = { meta, masters, insertion, reperes }
- *     masters    formations du périmètre « création numérique » + candidatures 2023-2025 + coordonnées (API REST)
+ *     masters    formations de la discipline « Lettres, sciences du langage, arts » + candidatures 2023-2025 + coordonnées (API REST)
  *     insertion  insertion professionnelle (2010-2020) des disciplines liées au périmètre
  *     reperes    distribution nationale (quantiles) pour situer une formation
  *     meta       sources, périmètre, date de génération, comptages de contrôle
@@ -26,15 +26,18 @@ const SRC = process.argv[2];
 if (!SRC) { console.error('Usage : node scripts/build-data.mjs <dossier-sources>'); process.exit(1); }
 const API = 'https://la-lab4ce.univ-lemans.fr/masters-stats/api/rest';
 
-// Périmètre : mentions nationales (noms normalisés). "coeur" = création numérique au sens strict.
-const SCOPE = {
-  'CREATION NUMERIQUE': 'coeur',
-  'ARTS, TECHNOLOGIES, CREATION': 'coeur',
-  'AUDIOVISUEL, MEDIAS INTERACTIFS NUMERIQUES, JEUX': 'coeur',
-  'HUMANITES NUMERIQUES': 'coeur',
-  'DESIGN': 'voisin',
-  'CINEMA ET AUDIOVISUEL': 'voisin',
+// Périmètre : la discipline officielle « Lettres, sciences du langage, arts » (nomenclature BCN, colonne Discipline des fichiers Mon Master).
+// Toutes ses mentions sont gardées ; elles sont rangées en groupes pour que l'utilisateur puisse filtrer (aucun filtre par défaut).
+const DISCIPLINE = 'LETTRES, SCIENCES DU LANGAGE, ARTS';
+const GROUPES = {
+  numerique: { label: 'Numérique, création et audiovisuel', mentions: { 'CREATION NUMERIQUE': 'Création numérique', 'ARTS, TECHNOLOGIES, CREATION': 'Arts, technologies, création', 'CINEMA ET AUDIOVISUEL': 'Cinéma et audiovisuel', 'DESIGN': 'Design' } },
+  arts: { label: 'Arts visuels et création artistique', mentions: { 'ARTS': 'Arts', 'ARTS PLASTIQUES': 'Arts plastiques', 'CREATION ARTISTIQUE': 'Création artistique', "APPROCHE CREATIVE DE L'ESPACE PUBLIC": "Approche créative de l'espace public", 'MODE': 'Mode' } },
+  spectacle: { label: 'Spectacle vivant et musique', mentions: { 'ARTS DE LA SCENE ET DU SPECTACLE VIVANT': 'Arts de la scène et du spectacle vivant', 'THEATRE': 'Théâtre', 'DANSE': 'Danse', 'MUSICOLOGIE': 'Musicologie' } },
+  lettres: { label: 'Lettres, langage et langues', mentions: { 'LETTRES': 'Lettres', 'LETTRES ET CREATION LITTERAIRE': 'Lettres et création littéraire', 'LITTERATURE GENERALE ET COMPAREE': 'Littérature générale et comparée', 'ARTS, LETTRES ET CIVILISATIONS': 'Arts, lettres et civilisations', 'SCIENCES DU LANGAGE': 'Sciences du langage', 'FRANCAIS LANGUE ETRANGERE': 'Français langue étrangère', 'TRAITEMENT AUTOMATIQUE DES LANGUES': 'Traitement automatique des langues' } },
+  patrimoine: { label: 'Patrimoine et industries culturelles', mentions: { 'CONSERVATION-RESTAURATION DES BIENS CULTURELS': 'Conservation-restauration des biens culturels', 'INDUSTRIES CULTURELLES': 'Industries culturelles' } },
 };
+const MENTION_GROUPE = {}, MENTION_LABEL = {};
+for (const [g, { mentions }] of Object.entries(GROUPES)) for (const [k, l] of Object.entries(mentions)) { MENTION_GROUPE[k] = g; MENTION_LABEL[k] = l; }
 
 const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
 
@@ -146,20 +149,20 @@ function derive(s) {
 
 // Toutes les lignes (pour repères nationaux) et lignes du périmètre
 const all = [];
-for (const r of c23) all.push({ s: 2023, ifc: r.ifc, uai: r.eta_uai, mention: r.mention, parcours: r.parcours, raw: r, v: from2023(r) });
-for (const r of c2425) all.push({ s: Number(r.Session), ifc: r['Identifiant de la formation'], uai: r["Identifiant de l'établissement"], mention: r['Intitulé de la mention'], parcours: r['Intitulé du parcours'], raw: r, v: from2425(r) });
+for (const r of c23) all.push({ s: 2023, ifc: r.ifc, uai: r.eta_uai, mention: r.mention, disc: r.disci_lib, parcours: r.parcours, raw: r, v: from2023(r) });
+for (const r of c2425) all.push({ s: Number(r.Session), ifc: r['Identifiant de la formation'], uai: r["Identifiant de l'établissement"], mention: r['Intitulé de la mention'], disc: r.Discipline, parcours: r['Intitulé du parcours'], raw: r, v: from2425(r) });
 
-const inScope = (x) => SCOPE[norm(x.mention)];
+const inScope = (x) => (norm(x.disc) === DISCIPLINE ? MENTION_GROUPE[norm(x.mention)] ?? (console.warn('Mention hors groupes :', x.mention), null) : null);
 const formations = new Map();
 for (const x of all) {
-  const niveau = inScope(x); if (!niveau) continue;
+  const groupe = inScope(x); if (!groupe) continue;
   const rw = x.raw, is23 = x.s === 2023;
   let f = formations.get(x.ifc);
   const base = is23
     ? { etab: rw.eta_nom, region: rw.acad_reg_lib, academie: rw.acad_lib, secteurId: Number(rw.secteur_disci), secteur: rw.secteur_disci_lib, alternance: rw.alternance === '1', modalite: rw.modalite_enseignement, lieux: rw.lieux_formation }
     : { etab: rw["Libellé de l'établissement"], region: rw['Région académique de l\'établissement'], academie: rw["Académie de l'établissement"], secteurId: Number(rw['Identifiant du secteur disciplinaire']), secteur: rw['Secteur disciplinaire'], alternance: rw.Alternance === '1', modalite: rw["Modalités d'enseignement"], lieux: rw['Lieu(x) de formation'] };
-  if (!f) f = { ifc: x.ifc, uai: x.uai, mention: x.mention, parcours: x.parcours, niveau, ...base, sessions: {} };
-  else Object.assign(f, base, { niveau }); // la session la plus récente (lue en dernier) fait foi pour les libellés
+  if (!f) f = { ifc: x.ifc, uai: x.uai, mention: x.mention, parcours: x.parcours, groupe, ...base, sessions: {} };
+  else Object.assign(f, base, { groupe }); // la session la plus récente (lue en dernier) fait foi pour les libellés
   f.sessions[x.s] = derive(x.v);
   formations.set(x.ifc, f);
 }
@@ -240,7 +243,9 @@ const uaiScope = new Set([...formations.values()].map((f) => f.uai));
 const list = [...formations.values()].sort((a, b) => a.etab.localeCompare(b.etab) || a.parcours.localeCompare(b.parcours));
 const meta = {
   genere: new Date().toISOString().slice(0, 10),
-  perimetre: SCOPE,
+  discipline: 'Lettres, sciences du langage, arts',
+  groupes: Object.fromEntries(Object.entries(GROUPES).map(([k, g]) => [k, g.label])),
+  mentions: MENTION_LABEL,
   sources: {
     candidatures: 'MESRI-SIES, Mon Master 2023 et 2024-2025 (data.gouv.fr), Licence Ouverte',
     insertion: 'MESRI-SIES, Insertion professionnelle des diplômés de master en universités, 2010-2020 (data.gouv.fr), Licence Ouverte',

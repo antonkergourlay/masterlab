@@ -13,11 +13,11 @@
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
 <script>
-  const m = byId(params.get('id')) || MASTERS.find((x) => x.sessions[LAST] && x.niveau === 'coeur');
+  const m = byId(params.get('id')) || MASTERS.find((x) => x.sessions[LAST] && x.groupe === 'numerique');
   document.title = `${nom(m)} · Master Lab`;
   const yr = m.sessions[LAST] ? LAST : [...YEARS].reverse().find((a) => m.sessions[a]);
   const s = m.sessions[yr];
-  const peers = filterMasters({ large: true }).filter((x) => taux(x) != null && S(x).candidatsPP != null);
+  const peers = filterMasters().filter((x) => taux(x) != null && S(x).candidatsPP != null);
   const maxC = Math.max(...peers.map((x) => S(x).candidatsPP)), maxT = Math.max(...peers.map((x) => taux(x)));
   const years = YEARS.filter((a) => m.sessions[a]?.candidatsPP != null);
   const maxY = Math.max(...years.map((a) => m.sessions[a].candidatsPP), 1);
@@ -103,7 +103,7 @@
 
         <section class="card col" id="position">
           <h2 style="margin:0">Où se situe ce Master ?</h2>
-          <p class="muted">Chaque point est un Master de la création numérique (session ${LAST}). Plus il est à droite, plus le taux d’accès est élevé ; plus il est haut, plus il reçoit de candidats. Clique sur un point pour ouvrir sa fiche.</p>
+          <p class="muted">Chaque point est un Master de la discipline (session ${LAST}). Plus il est à droite, plus le taux d’accès est élevé ; plus il est haut, plus il reçoit de candidats. Clique sur un point pour ouvrir sa fiche.</p>
           <div class="scatter">
             ${peers.map((x) => `<a href="fiche.html?id=${esc(x.ifc)}" class="${x === m ? 'on' : ''}" title="${esc(x.ville)} – ${esc(x.parcours)}" aria-label="${esc(nom(x))}" style="left:${taux(x) / maxT * 92}%;bottom:${S(x).candidatsPP / maxC * 92}%"></a>`).join('')}
             <span class="ax" style="right:0;bottom:-24px">Taux d’accès →</span>

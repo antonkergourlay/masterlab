@@ -13,6 +13,7 @@
   <form class="toolbar" id="search" role="search" aria-label="Filtrer les formations">
     <div><label for="q">Mots-clés</label><input type="search" id="q" name="q" placeholder="ex. jeu vidéo, design" autocomplete="off"></div>
     <div><label for="zone">Zone géographique</label><input type="search" id="zone" name="zone" placeholder="ex. Bretagne, Lyon" autocomplete="off"></div>
+    <div><label for="groupe">Groupe de mentions</label><select id="groupe" name="groupe"></select></div>
     <div class="tb-more"><label for="mention">Mention</label><select id="mention" name="mention"><option value="">Toutes</option></select></div>
     <div class="tb-more"><label for="tauxMin">Taux d’accès</label>
       <select id="tauxMin"><option value="0">Tous</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
@@ -23,9 +24,9 @@
 
   <div class="split">
     <div class="map grow" id="map">
-      <div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en création numérique"></div>
-      <div class="tools"><button class="btn p" data-reset hidden>← Vue France</button></div>
-      <div class="legend">Bulle bleue : formations de la ville · Pastille : une formation</div>
+      <div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en lettres, langage et arts"></div>
+      <div class="tools"><button class="btn p" data-reset hidden>← Vue France</button><div class="zoom"><button class="btn" data-zoom="1.6" aria-label="Zoomer">+</button><button class="btn" data-zoom="0.625" aria-label="Dézoomer">−</button></div></div>
+      <div class="legend">Chaque bulle regroupe les formations proches : clique pour zoomer · ⌘ / Ctrl + molette ou pincement pour zoomer, la molette seule fait défiler la page</div>
     </div>
     <aside class="card col panel" id="panel" aria-live="polite"></aside>
   </div>
@@ -36,9 +37,10 @@
 <script src="js/app.js"></script>
 <script src="js/map.js"></script>
 <script>
-  $('#mention').insertAdjacentHTML('beforeend', Object.entries(MENTIONS).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join(''));
-  const f = { q: params.get('q') || '', zone: params.get('zone') || '', mention: params.get('mention') || '', alt: false, tauxMin: 0 };
-  ['q', 'zone', 'mention'].forEach((k) => $('#' + k).value = f[k]);
+  $('#groupe').innerHTML = groupeOptions();
+  $('#mention').innerHTML = mentionOptions();
+  const f = { q: params.get('q') || '', zone: params.get('zone') || '', groupe: params.get('groupe') || '', mention: params.get('mention') || '', alt: false, tauxMin: 0 };
+  ['q', 'zone', 'groupe', 'mention'].forEach((k) => $('#' + k).value = f[k]);
   // État de la carte dans l'adresse (#Ville/id) : au retour d'une fiche, la carte revient au même zoom.
   let [city, sel] = decodeURIComponent(location.hash.slice(1)).split('/');
   const map = createMap($('#emap'), (e) => {
@@ -46,7 +48,7 @@
     render();
     if (innerWidth <= 700) $('#panel').scrollIntoView({ behavior: 'smooth' });
   });
-  const queryString = () => new URLSearchParams(Object.entries({ q: f.q, zone: f.zone, mention: f.mention }).filter(([, v]) => v)).toString();
+  const queryString = () => new URLSearchParams(Object.entries({ q: f.q, zone: f.zone, groupe: f.groupe, mention: f.mention }).filter(([, v]) => v)).toString();
 
   function render() {
     const list = filterMasters(f), { villes, hors } = byCity(list);
@@ -99,9 +101,10 @@
   });
   // Les filtres s'appliquent au fil de la saisie (sans attendre le bouton)
   let timer;
-  const apply = () => { ['q', 'zone', 'mention'].forEach((k) => f[k] = $('#' + k).value); f.alt = $('#alt').checked; f.tauxMin = +$('#tauxMin').value; city = sel = undefined; render(); };
+  const apply = () => { ['q', 'zone', 'groupe', 'mention'].forEach((k) => f[k] = $('#' + k).value); f.alt = $('#alt').checked; f.tauxMin = +$('#tauxMin').value; city = sel = undefined; render(); };
   $('#search').addEventListener('input', (e) => { clearTimeout(timer); timer = setTimeout(apply, e.target.type === 'search' ? 250 : 0); });
   $('#search').addEventListener('submit', (e) => { e.preventDefault(); apply(); });
+  $$('[data-zoom]').forEach((b) => b.addEventListener('click', () => map.zoomBy(+b.dataset.zoom)));
   $('#tb-toggle').addEventListener('click', (e) => { const o = $('#search').classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', o); e.currentTarget.textContent = o ? 'Moins de filtres' : 'Plus de filtres'; });
   render();
 </script>
