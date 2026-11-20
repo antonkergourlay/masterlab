@@ -273,7 +273,13 @@ table.cmp { width: 100%; border-collapse: separate; border-spacing: 0; table-lay
   .cmp th { width: 100px; }
   .cmp th, .cmp td { padding: 10px; font-size: 13px; }
   .hbar, .hbar.wide { grid-template-columns: 100px 1fr 50px; }
-  .tabs .in { padding: 0 14px; }
+  .tabs .in { padding: 0 10px; gap: 0; justify-content: space-between; }
+  .tabs a { padding: 14px 8px; font-size: 14px; }
+  .tabs a::after { left: 8px; right: 8px; }
   .ft .in { grid-template-columns: 1fr; padding: 40px 18px 24px; gap: 28px; }
   .ft { margin-top: 48px; }
+}
+@media (max-width: 380px) {
+  .tabs a { padding: 14px 5px; font-size: 13px; }
+  .tabs a::after { left: 5px; right: 5px; }
 }
