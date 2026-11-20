@@ -201,8 +201,8 @@ main:focus { outline: none; }
 .legend-list div { display: flex; align-items: center; gap: 8px; }
 .legend-list i { width: 12px; height: 12px; border-radius: 3px; flex: none; }
 .legend-list b { margin-left: auto; font-weight: 600; }
-.scatter { position: relative; height: 280px; border-left: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line); margin: 8px 0 30px 30px; }
-.scatter a { position: absolute; width: 12px; height: 12px; margin: -6px; border-radius: 50%; background: var(--sky); transition: transform .2s var(--ease), background .2s; }
+.scatter { position: relative; height: 340px; border-left: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line); margin: 8px 0 30px 30px; }
+.scatter a { position: absolute; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: rgba(93, 169, 233, .55); transition: transform .2s var(--ease), background .2s; }
 .scatter a:hover { transform: scale(1.8); background: var(--blue); z-index: 3; }
 .scatter a.on { width: 20px; height: 20px; margin: -10px; background: var(--blue); border: 3px solid var(--navy); z-index: 2; }
 .scatter .ax { position: absolute; font-size: 12px; color: var(--muted); }
