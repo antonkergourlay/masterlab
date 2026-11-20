@@ -137,7 +137,7 @@ document.body.insertAdjacentHTML('beforeend', `
         <li><a href="https://www.monmaster.gouv.fr/" target="_blank" rel="noopener">Site officiel Mon Master</a></li>
       </ul>
     </div>
-    <div class="base"><span>© 2026 Master Lab · SAÉ 3.01 / 3.03, BUT MMI Laval · Données du ${esc(D.meta.genere)} · Licence Ouverte</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
+    <div class="base"><span>© 2026 Master Lab · SAÉ 3.01 / 3.03, BUT MMI Laval · Données du ${esc(D.meta.genere)} · MESRI-SIES, Licence Ouverte</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
   </div>
 </footer>`);
 const main = $('main'); if (main) { main.id ||= 'main'; main.tabIndex = -1; $('.skip').href = '#' + main.id; }
