@@ -142,7 +142,10 @@ document.body.insertAdjacentHTML('beforeend', `
 </footer>`);
 const main = $('main'); if (main) { main.id ||= 'main'; main.tabIndex = -1; $('.skip').href = '#' + main.id; }
 const hd = $('.hd'), burger = $('.burger', hd);
-burger.addEventListener('click', () => burger.setAttribute('aria-expanded', hd.classList.toggle('open')));
+const setMenu = (open) => { hd.classList.toggle('open', open); burger.setAttribute('aria-expanded', open); };
+burger.addEventListener('click', () => setMenu(!hd.classList.contains('open')));
+document.addEventListener('click', (e) => { if (!hd.contains(e.target)) setMenu(false); }); // le volet recouvre la page : un clic ailleurs le ferme
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
 
 /* ---------- Info-bulles « ? » : clic ou survol pour ouvrir ; clic ailleurs, Échap ou défilement pour fermer ---------- */
 let pop = null, popBtn = null, pinned = false;
