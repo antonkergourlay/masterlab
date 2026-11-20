@@ -182,7 +182,7 @@ function toast(msg) {
 /** Chiffre qui monte de 0 à sa valeur (sauf si l'utilisateur préfère moins de mouvement). */
 function countUp(el, to, format = fmt) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !isFinite(to)) { el.textContent = format(to); return; }
-  const t0 = performance.now(), dur = 900;
+  const t0 = performance.now(), dur = 600;
   const step = (t) => { const k = Math.min(1, (t - t0) / dur); el.textContent = format(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
 }
