@@ -161,9 +161,10 @@ main:focus { outline: none; }
 .panel { position: sticky; top: 84px; max-height: calc(100vh - 104px); overflow: auto; }
 .mini { display: block; padding: 13px 14px; border: 1px solid var(--line); border-radius: 8px; text-align: left; background: #fff; width: 100%; cursor: pointer; transition: border-color .2s, transform .2s var(--ease), box-shadow .2s; }
 .mini:hover { border-color: var(--blue); transform: translateX(3px); box-shadow: var(--shadow); }
-.toolbar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: end; padding: 16px; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.toolbar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: end; padding: 16px; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.toolbar > div { grid-column: span 2; }
 .toolbar .btn { height: 44px; }
-.toolbar > .btn.p { grid-column: 4; }
+.h3 { font: 500 18px/1.25 var(--sub); margin: 0; }
 .toolbar-toggle { display: none; }
 
 /* Cartes de formation */
@@ -236,7 +237,7 @@ table.cmp { width: 100%; border-collapse: separate; border-spacing: 0; table-lay
 /* Tablette */
 @media (max-width: 1000px) {
   .toolbar { grid-template-columns: 1fr 1fr 1fr; }
-  .toolbar > .btn.p { grid-column: auto; }
+  .toolbar > div { grid-column: auto; }
   .ft .in { grid-template-columns: 1fr 1fr; }
   .fiche-grid { grid-template-columns: 1fr; }
   .fiche-grid aside { position: static; }
