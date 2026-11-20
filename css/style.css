@@ -107,10 +107,10 @@ main:focus { outline: none; }
 .hd nav a.on { color: var(--blue); }
 .hd nav a.on::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 2.5px; border-radius: 2px; background: var(--blue); }
 /* Burger : 3 traits (celui du milieu + ::before / ::after) qui se transforment en croix */
-.burger { display: none; position: relative; width: 26px; height: 20px; padding: 0; border: 0; cursor: pointer; background: linear-gradient(var(--ink), var(--ink)) center / 100% 2px no-repeat; transition: background-size .2s var(--ease); }
-.burger::before, .burger::after { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: var(--ink); transition: transform .3s var(--ease); }
-.burger::before { top: 1px; }
-.burger::after { bottom: 1px; }
+.burger { display: none; position: relative; box-sizing: content-box; width: 26px; height: 20px; padding: 12px 9px; margin: -12px -9px; border: 0; cursor: pointer; background: linear-gradient(var(--ink), var(--ink)) center / 100% 2px no-repeat content-box; transition: background-size .2s var(--ease); }
+.burger::before, .burger::after { content: ""; position: absolute; left: 9px; right: 9px; height: 2px; background: var(--ink); transition: transform .3s var(--ease); }
+.burger::before { top: 13px; }
+.burger::after { bottom: 13px; }
 .hd.open .burger { background-size: 0 2px; }
 .hd.open .burger::before { transform: translateY(8px) rotate(45deg); }
 .hd.open .burger::after { transform: translateY(-8px) rotate(-45deg); }
