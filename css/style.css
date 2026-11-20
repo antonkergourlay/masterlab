@@ -110,7 +110,7 @@ main:focus { outline: none; }
 .hd nav a.on::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 2.5px; border-radius: 2px; background: var(--blue); }
 .burger { display: none; width: 26px; height: 20px; padding: 0; border: 0; cursor: pointer; background: repeating-linear-gradient(var(--ink) 0 2px, transparent 2px 9px); }
 .ft { margin-top: 72px; background: var(--blue); color: #fff; }
-.ft .in { max-width: 1120px; margin: 0 auto; padding: 52px 28px 28px; display: grid; grid-template-columns: 1.5fr 1fr 1.3fr 1.2fr; gap: 40px; }
+.ft .in { max-width: 1120px; margin: 0 auto; padding: 36px 28px 20px; display: grid; grid-template-columns: 1.6fr 1fr 1.2fr; gap: 40px; }
 .ft h4 { margin: 0 0 14px; font: 500 15px var(--sub); letter-spacing: .04em; text-transform: uppercase; color: var(--sky-soft); }
 .ft p, .ft li, .ft a { font-size: 14px; line-height: 1.6; color: #fff; }
 .ft a { text-decoration: none; opacity: .9; transition: opacity .2s, color .2s; }
@@ -118,7 +118,7 @@ main:focus { outline: none; }
 .ft ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .ft .brand { display: flex; align-items: center; gap: 10px; font: 800 24px/1 var(--display); font-stretch: 125%; margin-bottom: 14px; }
 .ft .brand img { height: 38px; filter: brightness(0) invert(1); }
-.ft .base { grid-column: 1 / -1; border-top: 1px solid rgba(255, 255, 255, .25); padding-top: 20px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13px; opacity: .85; }
+.ft .base { grid-column: 1 / -1; border-top: 1px solid rgba(255, 255, 255, .25); padding-top: 16px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13px; opacity: .85; }
 
 /* Accueil */
 .hero { background: var(--tint); border-bottom: 1px solid var(--line); overflow: hidden; }

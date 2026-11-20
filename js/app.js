@@ -123,27 +123,21 @@ document.body.insertAdjacentHTML('beforeend', `
   <div class="in">
     <div>
       <div class="brand"><img src="assets/logo.svg" alt="">MasterLab</div>
-      <p>Explorer les Masters publics de lettres, langage et arts (dont le numérique) : où ils sont, combien de places, combien de candidats, et ce que deviennent les diplômés.</p>
+      <p>Les Masters publics de lettres, langage et arts.</p>
     </div>
     <div>
       <h4>Explorer</h4>
       <ul><li><a href="carte.html">Carte interactive</a></li><li><a href="formations.html">Toutes les formations</a></li><li><a href="comparateur.html">Comparateur</a></li><li><a href="quiz.html">Quiz de profil</a></li></ul>
     </div>
     <div>
-      <h4>Données et méthode</h4>
+      <h4>Données</h4>
       <ul>
-        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Mon Master 2023-2025 (data.gouv.fr)</a></li>
-        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Insertion professionnelle 2010-2020</a></li>
+        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Mon Master 2023-2025</a></li>
+        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Insertion pro 2010-2020</a></li>
         <li><a href="https://www.monmaster.gouv.fr/" target="_blank" rel="noopener">Site officiel Mon Master</a></li>
-        <li>Licence Ouverte · MESRI-SIES</li>
       </ul>
     </div>
-    <div>
-      <h4>Le projet</h4>
-      <p>SAÉ 3.01 / 3.03, BUT MMI Laval.</p>
-      <p style="margin-top:8px">Loïs Hesnault, Anton Kergourlay, Ezechiel Fouiden Oster, William Beslon, Nathan Vacher.</p>
-    </div>
-    <div class="base"><span>© 2026 Master Lab · Données générées le ${esc(D.meta.genere)}</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
+    <div class="base"><span>© 2026 Master Lab · SAÉ 3.01 / 3.03, BUT MMI Laval · Données du ${esc(D.meta.genere)} · Licence Ouverte</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
   </div>
 </footer>`);
 const main = $('main'); if (main) { main.id ||= 'main'; main.tabIndex = -1; $('.skip').href = '#' + main.id; }
