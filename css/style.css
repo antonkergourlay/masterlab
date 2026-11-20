@@ -127,8 +127,7 @@ main:focus { outline: none; }
 .search { display: flex; gap: 12px; align-items: flex-end; background: #fff; padding: 20px; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
 .search > div { flex: 1; }
 .step { position: relative; overflow: hidden; }
-.step b { font: 800 30px/1 var(--display); font-stretch: 125%; color: var(--sky); transition: color .3s; }
-.step:hover b { color: var(--blue); }
+.step b { font: 800 30px/1 var(--display); font-stretch: 125%; color: var(--blue); }
 .hbar { display: grid; grid-template-columns: 150px 1fr 56px; gap: 12px; align-items: center; font-size: 14px; padding: 3px 6px; margin: 0 -6px; border-radius: 6px; transition: background .2s; }
 .hbar:hover { background: var(--tint); }
 .hbar > span { overflow-wrap: anywhere; }
