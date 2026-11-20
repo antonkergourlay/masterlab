@@ -18,8 +18,5 @@
     "url": "https://github.com/antonkergourlay/masterlab/issues"
   },
   "homepage": "https://github.com/antonkergourlay/masterlab#readme",
-  "dependencies": {
-    "echarts": "^5.5.1"
-  },
   "private": true
 }

@@ -123,32 +123,30 @@ document.body.insertAdjacentHTML('beforeend', `
   <div class="in">
     <div>
       <div class="brand"><img src="assets/logo.svg" alt="">MasterLab</div>
-      <p>Explorer les Masters publics de lettres, langage et arts (dont le numérique) : où ils sont, combien de places, combien de candidats, et ce que deviennent les diplômés.</p>
+      <p>Les Masters publics de lettres, langage et arts.</p>
+      <p>Loïs Hesnault, Anton Kergourlay, Ezechiel Fouiden Oster, William Beslon, Nathan Vacher</p>
     </div>
     <div>
       <h4>Explorer</h4>
       <ul><li><a href="carte.html">Carte interactive</a></li><li><a href="formations.html">Toutes les formations</a></li><li><a href="comparateur.html">Comparateur</a></li><li><a href="quiz.html">Quiz de profil</a></li></ul>
     </div>
     <div>
-      <h4>Données et méthode</h4>
+      <h4>Données</h4>
       <ul>
-        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Mon Master 2023-2025 (data.gouv.fr)</a></li>
-        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Insertion professionnelle 2010-2020</a></li>
+        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Mon Master 2023-2025</a></li>
+        <li><a href="https://www.data.gouv.fr/" target="_blank" rel="noopener">Insertion pro 2010-2020</a></li>
         <li><a href="https://www.monmaster.gouv.fr/" target="_blank" rel="noopener">Site officiel Mon Master</a></li>
-        <li>Licence Ouverte · MESRI-SIES</li>
       </ul>
     </div>
-    <div>
-      <h4>Le projet</h4>
-      <p>SAÉ 3.01 / 3.03, BUT MMI Laval.</p>
-      <p style="margin-top:8px">Loïs Hesnault, Anton Kergourlay, Ezechiel Fouiden Oster, William Beslon, Nathan Vacher.</p>
-    </div>
-    <div class="base"><span>© 2026 Master Lab · Données générées le ${esc(D.meta.genere)}</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
+    <div class="base"><span>© 2026 Master Lab · SAÉ 3.01 / 3.03, BUT MMI Laval · Données du ${esc(D.meta.genere)} · MESRI-SIES, Licence Ouverte</span><span>Le taux d’accès est un calcul Master Lab, pas un taux officiel.</span></div>
   </div>
 </footer>`);
 const main = $('main'); if (main) { main.id ||= 'main'; main.tabIndex = -1; $('.skip').href = '#' + main.id; }
 const hd = $('.hd'), burger = $('.burger', hd);
-burger.addEventListener('click', () => burger.setAttribute('aria-expanded', hd.classList.toggle('open')));
+const setMenu = (open) => { hd.classList.toggle('open', open); burger.setAttribute('aria-expanded', open); };
+burger.addEventListener('click', () => setMenu(!hd.classList.contains('open')));
+document.addEventListener('click', (e) => { if (!hd.contains(e.target)) setMenu(false); }); // le volet recouvre la page : un clic ailleurs le ferme
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
 
 /* ---------- Info-bulles « ? » : clic ou survol pour ouvrir ; clic ailleurs, Échap ou défilement pour fermer ---------- */
 let pop = null, popBtn = null, pinned = false;
@@ -188,7 +186,7 @@ function toast(msg) {
 /** Chiffre qui monte de 0 à sa valeur (sauf si l'utilisateur préfère moins de mouvement). */
 function countUp(el, to, format = fmt) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches || !isFinite(to)) { el.textContent = format(to); return; }
-  const t0 = performance.now(), dur = 900;
+  const t0 = performance.now(), dur = 600;
   const step = (t) => { const k = Math.min(1, (t - t0) / dur); el.textContent = format(Math.round(to * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
 }
