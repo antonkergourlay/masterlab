@@ -124,6 +124,7 @@ document.body.insertAdjacentHTML('beforeend', `
     <div>
       <div class="brand"><img src="assets/logo.svg" alt="">MasterLab</div>
       <p>Les Masters publics de lettres, langage et arts.</p>
+      <p>Loïs Hesnault, Anton Kergourlay, Ezechiel Fouiden Oster, William Beslon, Nathan Vacher</p>
     </div>
     <div>
       <h4>Explorer</h4>
