@@ -262,7 +262,7 @@ table.cmp { width: 100%; border-collapse: separate; border-spacing: 0; table-lay
   /* Menu : volet qui descend sous l'en-tête (sans pousser la page), liens qui arrivent l'un après l'autre */
   .hd nav { display: flex; flex-direction: column; gap: 0; position: absolute; left: 0; right: 0; top: 100%; padding: 4px 18px 10px; background: #fff; border-bottom: 1px solid var(--line); box-shadow: 0 14px 28px rgba(5, 22, 66, .12); opacity: 0; visibility: hidden; transform: translateY(-8px); transition: opacity .18s, transform .25s var(--ease), visibility 0s .25s; }
   .hd.open nav { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
-  .hd nav a { padding: 14px 4px; border-radius: 0; border-bottom: 1px solid var(--tint); opacity: 0; transform: translateY(-6px); }
+  .hd nav a { padding: 14px 4px; border-radius: 0; border-bottom: 1px solid var(--tint); opacity: 0; transform: translateY(-6px); transition: opacity .15s, transform .2s var(--ease), background .2s, color .2s; }
   .hd nav a:nth-child(2) { --i: 1; } .hd nav a:nth-child(3) { --i: 2; } .hd nav a:nth-child(4) { --i: 3; } .hd nav a:nth-child(5) { --i: 4; }
   .hd.open nav a { opacity: 1; transform: none; transition: opacity .2s calc(var(--i, 0) * 35ms + 60ms), transform .25s var(--ease) calc(var(--i, 0) * 35ms + 60ms), background .2s, color .2s; }
   .hd nav a.on::after { display: none; }
