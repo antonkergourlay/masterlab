@@ -1,10 +1,7 @@
 {
   "name": "master-lab",
   "version": "0.1.0",
-  "description": "Master Lab : explorer les Masters en création numérique (SAÉ 3.01/3.03, BUT MMI Laval)",
-  "directories": {
-    "doc": "docs"
-  },
+  "description": "Master Lab : explorer les Masters publics en lettres, sciences du langage, arts (SAÉ 3.01/3.03, BUT MMI Laval)",
   "scripts": {
     "start": "npx http-server -c-1 -p 5500 .",
     "data": "node scripts/build-data.mjs"

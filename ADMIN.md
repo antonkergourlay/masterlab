@@ -27,8 +27,8 @@ js/<page>.js          script propre à chaque page (index, carte, formations, fi
 js/map.js             carte Leaflet (bulles regroupées par zoom)
 js/france-outline.js  contour de la France (généré par scripts/build-outline.mjs)
 js/data.js            données générées (window.MASTERLAB)
-scripts/              build-data.mjs, check-data.mjs, build-topo.mjs (fond topographique, non utilisé)
-assets/               favicon, GeoJSON des régions
+scripts/              build-data.mjs, build-outline.mjs, check-data.mjs
+assets/               favicon, logo
 vendor/               Leaflet et leaflet.markercluster
 ```
 
