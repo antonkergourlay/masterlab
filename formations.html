@@ -35,8 +35,8 @@
       <div><label for="zone">Zone géographique</label><input type="search" id="zone" placeholder="ex. Bretagne, Lyon" autocomplete="off"></div>
       <div><label for="groupe">Groupe de mentions</label><select id="groupe"></select></div>
       <div><label for="mention">Mention</label><select id="mention"></select></div>
-      <div><label for="tauxMin">Taux d’accès minimum <span id="taux-help"></span></label>
-        <select id="tauxMin"><option value="0">Peu importe</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
+      <div><label for="taux-min">Taux d’accès minimum <span id="taux-help"></span></label>
+        <select id="taux-min"><option value="0">Peu importe</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
       <label class="check"><input type="checkbox" id="alt"> En alternance uniquement</label>
       <button class="btn" id="clear">Effacer les filtres</button>
       <a href="carte.html" id="to-map">Voir sur la carte →</a>
@@ -58,7 +58,7 @@
   };
 
   function render() {
-    const f = { q: $('#q').value, zone: $('#zone').value, groupe: $('#groupe').value, mention: $('#mention').value, alt: $('#alt').checked, tauxMin: +$('#tauxMin').value };
+    const f = { q: $('#q').value, zone: $('#zone').value, groupe: $('#groupe').value, mention: $('#mention').value, alt: $('#alt').checked, tauxMin: +$('#taux-min').value };
     const list = filterMasters(f).sort(sorts[$('#sort').value]);
     const qs = new URLSearchParams(Object.entries({ q: f.q, zone: f.zone, groupe: f.groupe, mention: f.mention }).filter(([, v]) => v)).toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
@@ -67,7 +67,7 @@
     $('#list').innerHTML = list.map((m) => card(m)).join('') || '<div class="card col"><h3>Aucun résultat</h3><p>Essaie un autre mot-clé ou retire un filtre.</p><button class="btn" data-clear>Effacer les filtres</button></div>';
     syncButtons();
   }
-  const clear = () => { $$('#filters input[type=search]').forEach((i) => i.value = ''); $('#groupe').value = $('#mention').value = ''; $('#alt').checked = false; $('#tauxMin').value = 0; render(); };
+  const clear = () => { $$('#filters input[type=search]').forEach((i) => i.value = ''); $('#groupe').value = $('#mention').value = ''; $('#alt').checked = false; $('#taux-min').value = 0; render(); };
   let timer;
   $$('#filters input, #filters select, #sort').forEach((el) => el.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(render, el.type === 'search' ? 250 : 0); }));
   $('#clear').addEventListener('click', clear);

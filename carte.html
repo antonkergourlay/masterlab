@@ -17,8 +17,8 @@
     <div><label for="zone">Zone géographique</label><input type="search" id="zone" name="zone" placeholder="ex. Bretagne, Lyon" autocomplete="off"></div>
     <div><label for="groupe">Groupe de mentions</label><select id="groupe" name="groupe"></select></div>
     <div class="tb-more"><label for="mention">Mention</label><select id="mention" name="mention"><option value="">Toutes</option></select></div>
-    <div class="tb-more"><label for="tauxMin">Taux d’accès</label>
-      <select id="tauxMin"><option value="0">Tous</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
+    <div class="tb-more"><label for="taux-min">Taux d’accès</label>
+      <select id="taux-min"><option value="0">Tous</option><option value="10">10 % et plus</option><option value="20">20 % et plus</option><option value="30">30 % et plus</option></select></div>
     <label class="toggle tb-more"><input type="checkbox" id="alt">Alternance</label>
     <button class="btn p">Rechercher</button>
     <button type="button" class="btn toolbar-toggle" id="tb-toggle" aria-expanded="false">Plus de filtres</button>
@@ -105,7 +105,7 @@
   });
   // Les filtres s'appliquent au fil de la saisie (sans attendre le bouton)
   let timer;
-  const apply = () => { ['q', 'zone', 'groupe', 'mention'].forEach((k) => f[k] = $('#' + k).value); f.alt = $('#alt').checked; f.tauxMin = +$('#tauxMin').value; city = sel = undefined; render(); };
+  const apply = () => { ['q', 'zone', 'groupe', 'mention'].forEach((k) => f[k] = $('#' + k).value); f.alt = $('#alt').checked; f.tauxMin = +$('#taux-min').value; city = sel = undefined; render(); };
   $('#search').addEventListener('input', (e) => { clearTimeout(timer); timer = setTimeout(apply, e.target.type === 'search' ? 250 : 0); });
   $('#search').addEventListener('submit', (e) => { e.preventDefault(); apply(); });
   $$('[data-zoom]').forEach((b) => b.addEventListener('click', () => map.zoomBy(+b.dataset.zoom)));
