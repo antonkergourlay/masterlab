@@ -13,13 +13,13 @@
 </style>
 </head>
 <body data-page="formations">
-<main class="wrap col" style="gap:20px;padding-top:32px">
+<main class="wrap col gap-20 pt-32">
   <div class="row between">
-    <div><h1>Formations</h1><p class="muted" style="font-size:15px;margin-top:8px" id="count"></p></div>
+    <div><h1>Formations</h1><p class="muted fs-15 mt-8" id="count"></p></div>
     <div class="row">
       <button class="btn" id="filters-btn" aria-expanded="false" aria-controls="filters">Filtres</button>
-      <label for="sort" style="margin:0">Trier par</label>
-      <select id="sort" style="width:auto">
+      <label for="sort" class="m-0">Trier par</label>
+      <select id="sort" class="w-auto">
         <option value="taux">Taux d’accès (le plus élevé)</option>
         <option value="places">Nombre de places</option>
         <option value="cand">Candidatures (les plus demandées)</option>
@@ -28,7 +28,7 @@
       </select>
     </div>
   </div>
-  <div class="split" style="--aw:280px">
+  <div class="split aw-280">
     <aside class="card col" id="filters">
       <h2 class="h3">Filtres</h2>
       <div><label for="q">Mots-clés</label><input type="search" id="q" placeholder="ex. jeu vidéo, design" autocomplete="off"></div>

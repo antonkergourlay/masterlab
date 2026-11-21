@@ -35,10 +35,10 @@
   const sections = [['presentation', 'Présentation'], ['admission', 'Admission'], ['position', 'Position'], ['insertion', 'Insertion pro']];
 
   $('#fiche').innerHTML = `
-  <div class="band"><div class="wrap col" style="padding-block:28px">
+  <div class="band"><div class="wrap col py-28">
     <button class="back" id="back">Retour</button>
-    <div class="row between stack-m" style="align-items:flex-end">
-      <div class="col grow" style="gap:8px">
+    <div class="row between stack-m items-end">
+      <div class="col grow gap-8">
         <p class="eyebrow">${esc(m.etab)}${m.ville ? ` · ${esc(m.ville)}` : ''}</p>
         <h1>${esc(nom(m))}</h1>
         <div class="chips"><span class="chip">Mention ${esc(mentionLabel(m.mention))}</span><span class="chip">${esc(m.secteur || 'Secteur n.d.')}</span>${m.alternance ? '<span class="chip">Alternance</span>' : ''}<span class="chip">Session ${yr}</span></div>
@@ -49,9 +49,9 @@
 
   <nav class="tabs" aria-label="Sections de la fiche"><div class="in">${sections.map(([id, l]) => `<a href="#${id}">${l}</a>`).join('')}</div></nav>
 
-  <div class="wrap col" style="gap:24px">
+  <div class="wrap col gap-24">
     ${yr !== LAST ? `<p class="note">Cette formation n’apparaît pas dans la session ${LAST} : les chiffres affichés sont ceux de ${yr}.</p>` : ''}
-    <div class="grid" style="--c:4;--cm:2">
+    <div class="grid cols-4 cols-m-2">
       <div class="kpi"><b>${fmt(s.places)}</b><span>Places ${help(DEF.places)}</span></div>
       <div class="kpi"><b>${fmt(s.candidatsPP)}</b><span>Candidats ${help(DEF.candidats)}</span></div>
       <div class="kpi"><b>${pc(s.tauxProposition)}</b><span>Taux d’accès ${help(DEF.taux)}</span></div>
@@ -59,9 +59,9 @@
     </div>
 
     <div class="fiche-grid">
-      <div class="col" style="gap:24px;min-width:0">
+      <div class="col gap-24 min-w-0">
         <section class="card col" id="presentation">
-          <h2 style="margin:0">Présentation</h2>
+          <h2 class="m-0">Présentation</h2>
           <div class="info"><span>Parcours</span><b>${esc(m.parcours || ND)}</b></div>
           <div class="info"><span>Mention</span><b>${esc(mentionLabel(m.mention))}</b></div>
           <div class="info"><span>Établissement</span><b>${esc(m.etab)}</b></div>
@@ -71,9 +71,9 @@
         </section>
 
         <section class="card col" id="admission">
-          <h2 style="margin:0">Admission</h2>
-          <div class="grid" style="--c:2;gap:28px">
-            <div class="col" style="gap:8px">
+          <h2 class="m-0">Admission</h2>
+          <div class="grid cols-2 gap-28">
+            <div class="col gap-8">
               <h3>Du dossier à l’inscription</h3>
               <p class="muted">Session ${yr}, phase principale</p>
               <div class="funnel">
@@ -81,17 +81,17 @@
                   .map(([l, v]) => `<div class="hbar"><span>${l}</span><i style="--w:${v == null || !s.candidatsPP ? 0 : Math.min(100, Math.max(2, v / s.candidatsPP * 100))}%"></i><b>${fmt(v)}</b></div>`).join('')}
               </div>
             </div>
-            <div class="col" style="gap:8px;align-items:center">
+            <div class="col gap-8 items-center">
               <h3>Taux d’accès ${help(DEF.taux)}</h3>
               ${s.tauxProposition == null ? `<p>${ND}</p>` : `<div class="donut" style="--v:${s.tauxProposition}%"><b>${pc(s.tauxProposition)}</b></div>`}
-              <p class="muted" style="text-align:center">${fmt(s.propositionsPP)} propositions pour ${fmt(s.candidatsPP)} candidats</p>
+              <p class="muted text-center">${fmt(s.propositionsPP)} propositions pour ${fmt(s.candidatsPP)} candidats</p>
             </div>
-            <div class="col" style="gap:8px">
+            <div class="col gap-8">
               <h3>Candidats selon la session</h3>
               <div class="cols">${years.map((a) => { const v = m.sessions[a].candidatsPP; return `<div><b>${fmt(v)}</b><i style="--h:${v / maxY * 80}%"></i><span>${a}</span></div>`; }).join('') || `<p>${ND}</p>`}</div>
               <p class="muted">2023 : une seule phase d’admission ; 2024 et 2025 : phase principale et complémentaire. À lire avec prudence.</p>
             </div>
-            <div class="col" style="gap:8px">
+            <div class="col gap-8">
               <h3>Origine des personnes ayant accepté ${help(DEF.origine)}</h3>
               ${oTot ? `<div class="stack" role="img" aria-label="${orig.map(([l, v]) => `${l} ${fmt(v)}`).join(', ')}">
                 ${orig.map(([, v, c]) => `<i style="width:${(v ?? 0) / oTot * 100}%;background:${c}"></i>`).join('')}</div>
@@ -102,26 +102,26 @@
         </section>
 
         <section class="card col" id="position">
-          <h2 style="margin:0">Où se situe ce Master ?</h2>
+          <h2 class="m-0">Où se situe ce Master ?</h2>
           <p class="muted">Chaque point est un Master de la discipline (session ${LAST}). Plus il est à droite, plus le taux d’accès est élevé ; plus il est haut, plus il reçoit de candidats. Clique sur un point pour ouvrir sa fiche.</p>
           <div class="scatter">
             ${peers.map((x) => `<a href="fiche.html?id=${esc(x.ifc)}" class="${x === m ? 'on' : ''}" title="${esc(x.ville)} – ${esc(x.parcours)}" aria-label="${esc(nom(x))}" style="left:${taux(x) / maxT * 92}%;bottom:${S(x).candidatsPP / maxC * 92}%"></a>`).join('')}
-            <span class="ax" style="right:0;bottom:-24px">Taux d’accès →</span>
-            <span class="ax" style="left:-28px;top:-22px">↑ Candidats</span>
+            <span class="ax ax-x">Taux d’accès →</span>
+            <span class="ax ax-y">↑ Candidats</span>
           </div>
         </section>
 
         <section class="card col" id="insertion">
-          <h2 style="margin:0">Insertion professionnelle</h2>
+          <h2 class="m-0">Insertion professionnelle</h2>
           <p class="note">Ces chiffres concernent la discipline « ${esc(INS_DISC[m.insDisc] || 'n.d.')} » de l’établissement, tous Masters confondus, pour les diplômés jusqu’en 2020. Ce n’est pas l’insertion de cette formation seule.</p>
-          ${hasIns ? `<div style="overflow-x:auto"><table class="simple"><thead><tr><th scope="col">Indicateur</th><th scope="col">18 mois après</th><th scope="col">30 mois après</th></tr></thead><tbody>
+          ${hasIns ? `<div class="overflow-x-auto"><table class="simple"><thead><tr><th scope="col">Indicateur</th><th scope="col">18 mois après</th><th scope="col">30 mois après</th></tr></thead><tbody>
             ${ind.map(([l, k, f]) => `<tr><th scope="row">${l}</th><td>${cell(18, k, f)}</td><td>${cell(30, k, f)}</td></tr>`).join('')}</tbody></table></div>
             <p class="muted">Dernière promotion disposant d’une valeur significative. « n.d. » : valeur non communiquée (échantillon trop petit).</p>`
           : '<p>Aucune donnée d’insertion exploitable pour cette discipline dans cet établissement (valeurs absentes ou non significatives).</p>'}
         </section>
       </div>
 
-      <aside class="col" style="gap:20px">
+      <aside class="col gap-20">
         <div class="card col">
           <h3>En bref</h3>
           <div>
@@ -137,7 +137,7 @@
           <h3>Sur cette page</h3>
           <nav class="toc" aria-label="Sur cette page">${sections.map(([id, l]) => `<a href="#${id}">${l}</a>`).join('')}</nav>
         </div>
-        <p class="muted" style="padding:0 4px">Source : MESRI-SIES, Mon Master 2023-2025 et insertion professionnelle des diplômés de master 2010-2020, Licence Ouverte. Lieux géocodés avec geo.api.gouv.fr. Données générées le ${esc(D.meta.genere)}.</p>
+        <p class="muted p-0-4">Source : MESRI-SIES, Mon Master 2023-2025 et insertion professionnelle des diplômés de master 2010-2020, Licence Ouverte. Lieux géocodés avec geo.api.gouv.fr. Données générées le ${esc(D.meta.genere)}.</p>
       </aside>
     </div>
   </div>`;

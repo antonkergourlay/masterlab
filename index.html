@@ -11,16 +11,16 @@
 </head>
 <body data-page="accueil">
 <main>
-  <section class="hero"><div class="wrap col" style="gap:22px;padding-block:64px;align-items:center">
+  <section class="hero"><div class="wrap col gap-22 py-64 items-center">
     <h1>Trouve ton Master en lettres, langage et arts</h1>
-    <p style="max-width:640px;text-align:center;font-size:17px;color:var(--muted)">Les formations publiques de la discipline « Lettres, sciences du langage, arts », du numérique à la création, sur une carte, avec leurs chiffres d’admission Mon Master et l’insertion professionnelle.</p>
-    <form class="search" action="carte.html" style="width:100%">
+    <p class="max-w-640 text-center fs-17 text-muted">Les formations publiques de la discipline « Lettres, sciences du langage, arts », du numérique à la création, sur une carte, avec leurs chiffres d’admission Mon Master et l’insertion professionnelle.</p>
+    <form class="search w-full" action="carte.html">
       <div><label for="q">Mots-clés</label><input type="search" id="q" name="q" placeholder="ex. jeu vidéo, design, médias"></div>
       <div><label for="zone">Zone géographique</label><input type="search" id="zone" name="zone" placeholder="ex. Bretagne, Lyon"></div>
       <div><label for="groupe">Groupe de mentions</label><select id="groupe" name="groupe"></select></div>
-      <button class="btn p" style="height:44px">Rechercher</button>
+      <button class="btn p h-44">Rechercher</button>
     </form>
-    <div class="row" style="justify-content:center">
+    <div class="row justify-center">
       <a class="btn" href="carte.html">Explorer la carte interactive →</a>
       <a class="btn" href="quiz.html">Faire le quiz de profil</a>
     </div>
@@ -36,19 +36,19 @@
   </div></section>
 
   <section class="wrap col">
-    <div class="row between"><h2 style="margin:0">La carte des Masters</h2><a href="carte.html">Ouvrir la carte interactive →</a></div>
+    <div class="row between"><h2 class="m-0">La carte des Masters</h2><a href="carte.html">Ouvrir la carte interactive →</a></div>
     <p>Chaque bulle indique le nombre de formations dans la ville. Clique pour explorer.</p>
-    <div class="map" id="preview" style="--mh:480px"><div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en lettres, langage et arts"></div></div>
+    <div class="map mh-480" id="preview"><div class="emap" id="emap" role="img" aria-label="Carte de France des Masters en lettres, langage et arts"></div></div>
   </section>
 
-  <section class="wrap col" style="padding-top:0">
-    <h2 style="margin:0">La discipline en chiffres</h2>
+  <section class="wrap col pt-0">
+    <h2 class="m-0">La discipline en chiffres</h2>
     <p class="muted" id="scope"></p>
-    <div class="grid" style="--c:4;--cm:2" id="kpis"></div>
+    <div class="grid cols-4 cols-m-2" id="kpis"></div>
     <div class="card col">
       <h3>Candidatures par ville</h3>
       <p class="muted">Candidatures en phase principale, formations de la ville additionnées (une même personne peut candidater à plusieurs formations).</p>
-      <div class="col" id="villes" style="gap:6px"></div>
+      <div class="col gap-6" id="villes"></div>
     </div>
   </section>
 </main>

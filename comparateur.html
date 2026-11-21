@@ -8,13 +8,13 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="comparateur">
-<main class="wrap col" style="gap:20px;padding-top:28px">
-  <div><h1>Comparateur</h1><p class="muted" style="font-size:15px;margin-top:8px">Jusqu’à trois Masters côte à côte. La valeur la plus élevée de chaque ligne chiffrée est en bleu.</p></div>
+<main class="wrap col gap-20 pt-28">
+  <div><h1>Comparateur</h1><p class="muted fs-15 mt-8">Jusqu’à trois Masters côte à côte. La valeur la plus élevée de chaque ligne chiffrée est en bleu.</p></div>
   <div class="row">
-    <label for="add" style="margin:0">Ajouter une formation</label>
-    <select id="add" style="width:auto;max-width:100%"></select>
+    <label for="add" class="m-0">Ajouter une formation</label>
+    <select id="add" class="w-auto max-w-full"></select>
   </div>
-  <div id="out" style="overflow-x:auto"></div>
+  <div id="out" class="overflow-x-auto"></div>
   <p class="note">« Taux d’accès » : plus il est élevé, plus la formation propose de places par candidat ; ce n’est pas un classement de qualité. L’insertion et le salaire concernent la discipline de l’établissement (promotions jusqu’en 2020), pas la formation seule.</p>
 </main>
 <script src="js/data.js"></script>
@@ -41,7 +41,7 @@
     $('#add').disabled = list.length >= 3;
 
     if (!list.length) {
-      $('#out').innerHTML = `<div class="card col" style="align-items:flex-start"><h3>Ton comparateur est vide</h3>
+      $('#out').innerHTML = `<div class="card col items-start"><h3>Ton comparateur est vide</h3>
         <p>Ajoute des formations avec le menu ci-dessus, ou avec le bouton « Comparer » de la liste, de la carte ou d’une fiche.</p>
         <a class="btn p" href="formations.html">Parcourir les formations</a></div>`;
       return;
@@ -51,9 +51,9 @@
       return vals.length > 1 && new Set(vals).size > 1 ? Math.max(...vals) : null;
     });
     $('#out').innerHTML = `<table class="cmp" style="min-width:${200 + list.length * 200}px">
-      <thead><tr><th scope="col">Formation</th>${list.map((m) => `<td><div class="col" style="gap:8px">
-        <a href="fiche.html?id=${esc(m.ifc)}" style="font-weight:700">${esc(nom(m))}</a>
-        <button class="btn ghost" data-cmp="${esc(m.ifc)}" style="align-self:flex-start;padding-inline:0">Retirer</button></div></td>`).join('')}</tr></thead>
+      <thead><tr><th scope="col">Formation</th>${list.map((m) => `<td><div class="col gap-8">
+        <a href="fiche.html?id=${esc(m.ifc)}" class="font-bold">${esc(nom(m))}</a>
+        <button class="btn ghost self-start px-0" data-cmp="${esc(m.ifc)}">Retirer</button></div></td>`).join('')}</tr></thead>
       <tbody>${rows.map(([l, show, v], i) => `<tr><th scope="row">${l}</th>${list.map((m) => `<td class="${best[i] !== null && v(m) === best[i] ? 'best' : ''}">${show(m)}</td>`).join('')}</tr>`).join('')}</tbody>
     </table>`;
     syncButtons();

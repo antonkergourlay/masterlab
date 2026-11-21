@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-page="carte">
-<main class="wrap col" style="gap:20px;padding-top:32px">
-  <div><h1>Carte interactive</h1><p class="muted" style="font-size:15px;margin-top:8px" id="sub"></p></div>
+<main class="wrap col gap-20 pt-32">
+  <div><h1>Carte interactive</h1><p class="muted fs-15 mt-8" id="sub"></p></div>
   <form class="toolbar" id="search" role="search" aria-label="Filtrer les formations">
     <div><label for="q">Mots-clés</label><input type="search" id="q" name="q" placeholder="ex. jeu vidéo, design" autocomplete="off"></div>
     <div><label for="zone">Zone géographique</label><input type="search" id="zone" name="zone" placeholder="ex. Bretagne, Lyon" autocomplete="off"></div>
@@ -69,10 +69,10 @@
     $('#panel').innerHTML = m ? `
       <button class="back" data-back>Formations à ${esc(m.ville)}</button>
       <p class="eyebrow">${esc(m.etab)} · ${esc(m.ville)}</p>
-      <h2 style="margin:0">${esc(nom(m))}</h2>
-      <p class="muted" style="margin:0">${esc(GROUPES[m.groupe])} · discipline Lettres, sciences du langage, arts</p>
+      <h2 class="m-0">${esc(nom(m))}</h2>
+      <p class="muted m-0">${esc(GROUPES[m.groupe])} · discipline Lettres, sciences du langage, arts</p>
       ${chips(m)}
-      <div class="grid" style="--c:2;--cm:2;gap:10px">
+      <div class="grid cols-2 cols-m-2 gap-10">
         <div class="kpi"><b>${fmt(S(m).places)}</b><span>Places</span></div>
         <div class="kpi"><b>${pc(taux(m))}</b><span>Taux d’accès ${help(DEF.taux)}</span></div>
         <div class="kpi"><b>${fmt(S(m).candidatsPP)}</b><span>Candidats</span></div>
@@ -82,14 +82,14 @@
       <button class="btn" data-cmp="${esc(m.ifc)}"></button>`
     : c ? `
       <p class="eyebrow">${c.ms.length} formation${c.ms.length > 1 ? 's' : ''}</p>
-      <h2 style="margin:0">${esc(c.ville)}</h2>
+      <h2 class="m-0">${esc(c.ville)}</h2>
       ${c.ms.map((x, i) => `<button class="mini" data-id="${esc(x.ifc)}"><span class="eyebrow">${i + 1} · ${esc(x.etab)}</span><br><b>${esc(nom(x))}</b><br>${chips(x)}</button>`).join('')}`
     : list.length ? `
-      <h2 style="margin:0">${list.length} formation${list.length > 1 ? 's' : ''} trouvée${list.length > 1 ? 's' : ''}</h2>
+      <h2 class="m-0">${list.length} formation${list.length > 1 ? 's' : ''} trouvée${list.length > 1 ? 's' : ''}</h2>
       <p>Clique sur une bulle ou une ville pour zoomer.</p>
       ${villes.slice().sort((a, b) => b.ms.length - a.ms.length).map((x) => `<button class="mini" data-city="${esc(x.ville)}"><b>${esc(x.ville)}</b> <span class="muted">· ${x.ms.length} formation${x.ms.length > 1 ? 's' : ''}</span></button>`).join('')}
       ${horsHtml}<a href="formations.html${qs ? '?' + qs : ''}">Voir ces résultats en liste →</a>`
-    : '<h2 style="margin:0">Aucune formation</h2><p>Aucun Master ne correspond à ces critères. Élargis ta recherche.</p><a class="btn" href="carte.html">Effacer la recherche</a>';
+    : '<h2 class="m-0">Aucune formation</h2><p>Aucun Master ne correspond à ces critères. Élargis ta recherche.</p><a class="btn" href="carte.html">Effacer la recherche</a>';
     syncButtons();
   }
 
