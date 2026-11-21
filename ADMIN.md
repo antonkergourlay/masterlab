@@ -21,8 +21,9 @@ formations.html       liste filtrable et triable
 fiche.html?id=<ifc>   fiche formation : admission, position, insertion
 comparateur.html      3 formations côte à côte
 quiz.html             quiz de profil (critères vérifiables)
-css/style.css         feuille de style du prototype + ajouts (aide, notes, carte Leaflet)
+css/style.css         feuille de style du prototype + ajouts (aide, notes, carte Leaflet) ; classes utilitaires en fin de fichier à la place des attributs style=""
 js/app.js             socle commun : données, indicateurs, en-tête/pied, comparateur, cartes
+js/<page>.js          script propre à chaque page (index, carte, formations, fiche, comparateur, quiz)
 js/map.js             carte Leaflet (bulles regroupées par zoom)
 js/france-outline.js  contour de la France (généré par scripts/build-outline.mjs)
 js/data.js            données générées (window.MASTERLAB)
@@ -82,7 +83,7 @@ Les villes et coordonnées de l'API Masters-stats se sont révélées incohéren
 ## 6. Conception (composants)
 - **`js/app.js`** : données et indicateurs (`S`, `taux`, `insVal`), recherche (`filterMasters`), mise en forme (`fmt`, `pc`, `eur`, absent → « n.d. »), en-tête et pied de page injectés, comparateur (3 au plus), composant carte de formation (`card`), regroupement par ville (`byCity`).
 - **`js/map.js`** : `createMap(el, onClick)` renvoie `{ update({ villes, city, sel }) }`. L'état de la carte est dans l'adresse (`#Ville/<ifc>`) : au retour d'une fiche, le zoom est retrouvé.
-- **Pages** : chaque HTML charge `vendor/leaflet/` (si carte), `js/data.js`, `js/app.js`, puis un script en ligne.
+- **Pages** : chaque HTML charge `vendor/leaflet/` (si carte), `js/data.js`, `js/app.js`, puis son script `js/<page>.js` (aucun script en ligne dans le HTML).
 - **Scripts classiques, sans `fetch` ni `type="module"`** : choix voulu. Les navigateurs bloquent `fetch` et les modules ES quand la page est ouverte en `file://` (double-clic sur `index.html`). Les données sont donc chargées par un `<script src="js/data.js">` (fichier généré par `scripts/build-data.mjs`, jamais édité à la main) et partagées par des variables globales. Si le site passe un jour sur un serveur, `data.js` pourra devenir un fichier JSON chargé avec `fetch`.
 - **Accessibilité** : lien d'évitement, focus visible, `aria-live` sur le panneau de la carte, liste de villes alternative à la carte, tableaux pour l'insertion, aide « ? » au clavier (`<details>`).
 
